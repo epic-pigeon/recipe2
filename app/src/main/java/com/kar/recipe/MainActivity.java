@@ -139,6 +139,7 @@ public class MainActivity extends AppCompatActivity
             TextView textView = (TextView) convertView.findViewById(R.id.textView_name);
 
             imageView.setImageResource(IMAGES[position]);
+
             textView.setText(namesOfRecipes[position]);
 
             return convertView;
