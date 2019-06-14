@@ -3,6 +3,7 @@ package com.kar.recipe;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -71,6 +72,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("hello" , "Nikita LOH");
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -98,8 +100,21 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
+        Button mEmailSignUpButton = (Button) findViewById(R.id.email_sign_up_button);
+        mEmailSignUpButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switchActivity();
+            }
+        });
+
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+    }
+
+    private void switchActivity(){
+        Intent intent = new Intent(this, SignUpActivity.class);
+        startActivity(intent);
     }
 
     private void populateAutoComplete() {
@@ -153,6 +168,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void attemptLogin() {
+        Log.d("hello" , "KAR");
         if (mAuthTask != null) {
             return;
         }
@@ -169,7 +185,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        if (TextUtils.isEmpty(password) || !isPasswordValid(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
@@ -197,15 +213,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // form field with an error.
             focusView.requestFocus();
         } else {
+            Log.d("hello" , "kar2" + isLogin(email , password));
             if (isLogin(email , password)) {
+
                 // Show a progress spinner, and kick off a background task to
                 // perform the user login attempt.
                 showProgress(true);
                 mAuthTask = new UserLoginTask(email, password);
                 mAuthTask.execute((Void) null);
             }else{
-                mPasswordView.setError(getString(R.string.error_invalid_password));
-                mEmailView.setError(getString(R.string.error_invalid_email));
+                mPasswordView.setError("");
+                mEmailView.setError("Такого пользователя не существует");
                 cancel = true;
             }
         }
@@ -214,17 +232,20 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     //TODO
     @RequiresApi(api = Build.VERSION_CODES.N)
     private boolean isLogin( String email,  String password){
+        Log.d("hello" , "Nikita Loh");
         try {
             Data data = DBHandler.getData();
             Log.d("hello" , "Nikita Loh");
             if (data.getUsers().findFirst(user -> user.getName().equals(email) && user.getPassword().equals(password)) != null){
                 return true;
+            }else{
+                return false;
             }
         } catch (IOException e) {
+            Log.d("hello" , "Nikita Loshara");
             e.printStackTrace();
+            return false;
         }
-
-        return false;
     }
 
     private boolean isEmailValid(String email) {
