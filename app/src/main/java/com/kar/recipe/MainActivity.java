@@ -1,5 +1,6 @@
 package com.kar.recipe;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,9 +13,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private String[] namesOfRecipes = {"Голубцы" , "Пельмени" , "Запеканка" , "Бутуреброд", "Омлет" , "Картошка Фри" ,
+            "Борщ", "Окрошка", "Крабовый салат", "Оливье", "Запеченный карп" , "Яблочный штрудель" , "Эклер" , "Салат Цезарь"};
+    private int[] IMAGES = {R.drawable.golobci, R.drawable.pelmeni, R.drawable.zapekanka, R.drawable.sandwich, R.drawable.omlet,
+            R.drawable.fri , R.drawable.borch, R.drawable.okroshka, R.drawable.krabpviy_salat, R.drawable.olive, R.drawable.karp,
+            R.drawable.yablochniy_shtrudel, R.drawable.ekler, R.drawable.cezar_salat};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +43,10 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });
+
+        ListView listView = (ListView) findViewById(R.id.listView);
+        DishAdapter dishAdapter = new DishAdapter();
+        listView.setAdapter(dishAdapter);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -61,8 +77,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -75,23 +95,53 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
+        TextView textView = (TextView) findViewById(R.id.my_text_view);
+        if (id == R.id.nav_recipes) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+            textView.setText("Рецепты");
+        } else if (id == R.id.nav_favorite_recipes) {
+            textView.setText("Любимые Рецепты");
+        } else if (id == R.id.nav_search) {
+            textView.setText("Поиск");
+        } else if (id == R.id.nav_sign_in) {
+            textView.setText("Войти");
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
         }
-
+        //@string/nav_header_title
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    class DishAdapter extends BaseAdapter{
+
+        @Override
+        public int getCount() {
+            return namesOfRecipes.length;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            convertView = getLayoutInflater().inflate(R.layout.dishlayout, null);
+
+            ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView);
+            TextView textView = (TextView) convertView.findViewById(R.id.textView_name);
+
+            imageView.setImageResource(IMAGES[position]);
+            textView.setText(namesOfRecipes[position]);
+
+            return convertView;
+        }
     }
 }
