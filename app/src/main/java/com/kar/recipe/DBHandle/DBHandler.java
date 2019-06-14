@@ -197,7 +197,7 @@ public final class DBHandler {
         updateDataIfNotNull();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public static void changeUserAvatar(int id, Bitmap avatar, String extension) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         avatar.compress(
@@ -205,7 +205,7 @@ public final class DBHandler {
                         extension.equalsIgnoreCase("png") ? Bitmap.CompressFormat.PNG :
                                 extension.equalsIgnoreCase("webp") ? Bitmap.CompressFormat.WEBP : null,
                 100, outputStream);
-        String image = Base64.getEncoder().encodeToString(outputStream.toByteArray());
+        String image = new String(android.util.Base64.encode(outputStream.toByteArray(), android.util.Base64.DEFAULT));
         executePostQuery(
                 "changeUser",
                 new Collection<>(
