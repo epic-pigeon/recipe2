@@ -30,11 +30,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.kar.recipe.DBHandle.Collection;
 import com.kar.recipe.DBHandle.DBHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -226,7 +228,26 @@ public class SignUpActivity extends AppCompatActivity implements LoaderCallbacks
 
             //TODO //TODO //TODO //TODO //TODO //TODO //TODO
             //TODO //TODO //TODO //TODO //TODO //TODO //TODO
-            //Регистрация
+
+            CountDownLatch latch = new CountDownLatch(1);
+
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    try {
+                        DBHandler.createUser(email, password);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    latch.countDown();
+                    return null;
+                }
+            }.execute();
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             //TODO //TODO //TODO //TODO //TODO //TODO //TODO
             //TODO //TODO //TODO //TODO //TODO //TODO //TODO
 
