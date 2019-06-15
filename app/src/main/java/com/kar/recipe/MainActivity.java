@@ -34,6 +34,7 @@ import android.widget.TextView;
 
 import com.kar.recipe.DBHandle.Collection;
 import com.kar.recipe.DBHandle.DBHandler;
+import com.kar.recipe.DataClasses.Data;
 import com.kar.recipe.DataClasses.Ingredient;
 import com.kar.recipe.DataClasses.Recipe;
 import com.kar.recipe.DataClasses.RecipeIngredient;
@@ -305,34 +306,53 @@ public class MainActivity extends AppCompatActivity
                             imageButton.setImageResource(R.drawable.like);
                             Snackbar.make(view, "Добавлено к помеченным", Snackbar.LENGTH_LONG)
                                     .setAction("Action", null).show();
-                            new AsyncTask<Void, Void, Void>() {
+                            new AsyncTask<Void, Void, Data>() {
                                 @RequiresApi(api = Build.VERSION_CODES.N)
                                 @Override
-                                protected Void doInBackground(Void... voids) {
+                                protected Data doInBackground(Void... voids) {
                                     try {
                                         DBHandler.addSave(GeneralData.user.getId(), current.get(position).getId());
+                                        DBHandler.updateData();
+                                        return DBHandler.getData();
                                     } catch (IOException e) {
                                         e.printStackTrace();
+                                        return null;
                                     }
-                                    return null;
+                                }
+
+                                @Override
+                                protected void onPostExecute(Data data) {
+                                    recipes = data.getRecipes();
+                                    GeneralData.user = data.getUsers().findFirst(user -> user.getId() == GeneralData.user.getId());
+                                    notifyDataSetChanged();
                                 }
                             }.execute();
                         } else {
                             imageButton.setImageResource(R.drawable.not_like);
                             Snackbar.make(view, "Удалено из помеченных", Snackbar.LENGTH_LONG)
                                     .setAction("Action", null).show();
-                            new AsyncTask<Void, Void, Void>() {
+                            new AsyncTask<Void, Void, Data>() {
                                 @RequiresApi(api = Build.VERSION_CODES.N)
                                 @Override
-                                protected Void doInBackground(Void... voids) {
+                                protected Data doInBackground(Void... voids) {
                                     try {
                                         DBHandler.removeSave(GeneralData.user.getId(), current.get(position).getId());
+                                        DBHandler.updateData();
+                                        return DBHandler.getData();
                                     } catch (IOException e) {
                                         e.printStackTrace();
+                                        return null;
                                     }
-                                    return null;
+                                }
+
+                                @Override
+                                protected void onPostExecute(Data data) {
+                                    recipes = data.getRecipes();
+                                    GeneralData.user = data.getUsers().findFirst(user -> user.getId() == GeneralData.user.getId());
+                                    notifyDataSetChanged();
                                 }
                             }.execute();
+
                         }
                     }else{
                         Snackbar.make(view, "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG)
