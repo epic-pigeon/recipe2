@@ -16,7 +16,9 @@ public class Recipe extends DataClass {
     private String name;
     private String cooking;
     private String photo;
-    private transient Collection<RecipeIngredient> ingredients;
+    @DataClassDoNotShow
+    private Collection<RecipeIngredient> ingredients;
+    @DataClassDoNotShow
     private transient Bitmap image;
 
     public Recipe(int id, String name, String cooking, String photo) {

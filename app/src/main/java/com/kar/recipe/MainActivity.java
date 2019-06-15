@@ -1,5 +1,6 @@
 package com.kar.recipe;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.media.Image;
@@ -21,6 +22,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -161,7 +163,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public Object getItem(int position) {
-            return null;
+            return recipes.get(position);
         }
 
         @Override
@@ -190,6 +192,19 @@ public class MainActivity extends AppCompatActivity
                 imageButton.setImageResource(R.drawable.not_like);
                 imageButton.setSelected(false);
             }
+
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Recipe recipe = recipes.get(position);
+                    Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("recipe", recipe);
+                    intent.putExtra("recipe_bundle", bundle);
+                    Log.d("intent", recipe.getIngredients().toString());
+                    startActivity(intent);
+                }
+            });
 
             imageButton.setOnClickListener(new View.OnClickListener() {
                 @Override

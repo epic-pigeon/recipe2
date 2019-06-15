@@ -3,6 +3,7 @@ package com.kar.recipe.DBHandle;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 

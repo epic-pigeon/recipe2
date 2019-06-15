@@ -1,9 +1,10 @@
 package com.kar.recipe.DataClasses;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-public class DataClass {
+public class DataClass implements Serializable {
     public String toString() {
         StringBuilder result = new StringBuilder();
         String newLine = System.getProperty("line.separator");
@@ -25,7 +26,7 @@ public class DataClass {
     private String fieldToString(Field field) {
         String newLine = System.getProperty("line.separator");
         StringBuilder result = new StringBuilder();
-        if (!Modifier.isTransient(field.getModifiers())) {
+        if (!Modifier.isTransient(field.getModifiers()) && field.getAnnotation(DataClassDoNotShow.class) == null) {
             result.append("  ");
             try {
                 result.append(field.getName());
