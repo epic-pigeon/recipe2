@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
@@ -38,6 +39,7 @@ import com.kar.recipe.DataClasses.Data;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -229,21 +231,42 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
     }
 
+    private static class DataTask extends AsyncTask<Void, Void, Data> {
+        private CountDownLatch latch;
+
+        public DataTask(CountDownLatch latch) {
+            this.latch = latch;
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        @Override
+        protected Data doInBackground(Void... voids) {
+            try {
+                data = DBHandler.getData();
+                latch.countDown();
+                return data;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }
+    private static Data data;
     //TODO
     @RequiresApi(api = Build.VERSION_CODES.N)
     private boolean isLogin( String email,  String password){
         Log.d("hello" , "Nikita Loh");
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        new DataTask(countDownLatch).execute();
         try {
-            Data data = DBHandler.getData();
-            Log.d("hello" , "Nikita Loh");
-            if (data.getUsers().findFirst(user -> user.getName().equals(email) && user.getPassword().equals(password)) != null){
-                return true;
-            }else{
-                return false;
-            }
-        } catch (IOException e) {
-            Log.d("hello" , "Nikita Loshara");
+            countDownLatch.await();
+        } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+        if (data.getUsers().findFirst(user -> user.getName().equals(email) && user.getPassword().equals(password)) != null){
+            Log.d("hello" , "Nikita krasava");
+            return true;
+        } else {
             return false;
         }
     }
