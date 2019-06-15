@@ -27,6 +27,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.kar.recipe.DBHandle.Collection;
@@ -34,6 +35,7 @@ import com.kar.recipe.DBHandle.DBHandler;
 import com.kar.recipe.DataClasses.Recipe;
 
 import java.io.IOException;
+import java.util.ServiceConfigurationError;
 import java.util.concurrent.CountDownLatch;
 
 public class MainActivity extends AppCompatActivity
@@ -71,6 +73,9 @@ public class MainActivity extends AppCompatActivity
         ListView listView = (ListView) findViewById(R.id.listView);
         DishAdapter dishAdapter = new DishAdapter();
         listView.setAdapter(dishAdapter);
+
+        SearchView searchView = (SearchView) findViewById(R.id.searchView_dish);
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
