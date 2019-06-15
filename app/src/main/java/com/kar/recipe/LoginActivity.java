@@ -224,7 +224,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 mAuthTask = new UserLoginTask(email, password);
                 mAuthTask.execute((Void) null);
             }else{
-                mPasswordView.setError("");
+                mPasswordView.setError("Такого пользователя не существует");
                 mEmailView.setError("Такого пользователя не существует");
                 cancel = true;
             }
@@ -255,6 +255,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     //TODO
     @RequiresApi(api = Build.VERSION_CODES.N)
     private boolean isLogin( String email,  String password){
+        /*GeneralData generalData = new GeneralData();
+        if (email.equals(generalData.getLogin()) && password.equals(generalData.getPassword())){
+            return true;
+        }
+        return false;*/
+
         Log.d("hello" , "Nikita Loh");
         CountDownLatch countDownLatch = new CountDownLatch(1);
         new DataTask(countDownLatch).execute();

@@ -1,7 +1,10 @@
 package com.kar.recipe;
 
 import android.content.Intent;
+import android.media.Image;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.View;
@@ -15,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -137,6 +141,21 @@ public class MainActivity extends AppCompatActivity
 
             ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView);
             TextView textView = (TextView) convertView.findViewById(R.id.textView_name);
+            ImageButton imageButton = (ImageButton) convertView.findViewById(R.id.imageButton_favorite);
+
+            imageButton.setImageResource(R.drawable.ic_menu_gallery);
+
+            imageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    imageButton.setSelected(!imageButton.isSelected());
+                    if (imageButton.isSelected()){
+                        imageButton.setImageResource(R.drawable.ic_menu_camera);
+                    }else{
+                        imageButton.setImageResource(R.drawable.ic_menu_gallery);
+                    }
+                }
+            });
 
             imageView.setImageResource(IMAGES[position]);
 
