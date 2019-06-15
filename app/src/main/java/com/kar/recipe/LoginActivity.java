@@ -74,7 +74,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("hello" , "Nikita LOH");
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -170,7 +169,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void attemptLogin() {
-        Log.d("hello" , "KAR");
         if (mAuthTask != null) {
             return;
         }
@@ -192,17 +190,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             focusView = mPasswordView;
             cancel = true;
         }
-
-        // Check for a valid email address.
-       /* if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
-            focusView = mEmailView;
-            cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
-            cancel = true;
-        }*/
 
         if (TextUtils.isEmpty(email)) {
             mEmailView.setError(getString(R.string.error_field_required));
@@ -250,7 +237,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
     }
     private static Data data;
-    //TODO
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     private boolean isLogin( String email,  String password){
         CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -262,7 +249,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
         if (data.getUsers().findFirst(user -> user.getName().equals(email) && user.getPassword().equals(password)) != null){
             GeneralData.user = data.getUsers().findFirst(user -> user.getName().equals(email) && user.getPassword().equals(password));
-            Log.d("hello" , GeneralData.user.toString());
             return true;
         } else {
             return false;

@@ -90,6 +90,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (GeneralData.user != null) {
+            TextView textView_name = (TextView) findViewById(R.id.user_name);
+            textView_name.setText(GeneralData.user.getName());
+            ImageView imageView_avatar = (ImageView) findViewById(R.id.avatar_imageView);
+            try {
+                imageView_avatar.setImageBitmap(GeneralData.user.getAvatarImage());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -213,7 +228,7 @@ public class MainActivity extends AppCompatActivity
         protected Collection<Recipe> doInBackground(Void... voids) {
             try {
                 Collection<Recipe> recipes1 = DBHandler.getData().getRecipes();
-                Log.d("karkar", recipes1.toString());
+                Log.d("hello", recipes1.toString());
                 recipes = recipes1;
                 latch.countDown();
                 return recipes1;
