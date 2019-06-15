@@ -1,12 +1,14 @@
 package com.kar.recipe.DataClasses;
 
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 
 import com.kar.recipe.DBHandle.Collection;
 import com.kar.recipe.DBHandle.Constants;
 import com.kar.recipe.DBHandle.DBHandler;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 public class User extends DataClass {
     private int id;
@@ -61,6 +63,25 @@ public class User extends DataClass {
     }
 
     private static Bitmap loadAvatarImage(String avatar) throws IOException {
-        return DBHandler.loadImageViaUrl(Constants.SERVER.getUserAvatarURL(avatar));
+        final Bitmap[] bitmap = new Bitmap[1];
+        CountDownLatch latch = new CountDownLatch(1);
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                try {
+                    bitmap[0] = DBHandler.loadImageViaUrl(Constants.SERVER.getUserAvatarURL(avatar));
+                    latch.countDown();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }.execute();
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return bitmap[0];
     }
 }

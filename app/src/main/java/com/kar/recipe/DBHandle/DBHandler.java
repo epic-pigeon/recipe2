@@ -27,6 +27,7 @@ package com.kar.recipe.DBHandle;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 
@@ -46,6 +47,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Function;
 
 public final class DBHandler {
@@ -218,6 +220,28 @@ public final class DBHandler {
                         image,
                         extension
                 )
+        );
+        updateDataIfNotNull();
+    }
+
+
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static void addSave(int userID, int recipeID) throws IOException {
+        executePostQuery(
+                "saveRecipe",
+                new Collection<>("userID", "recipeID"),
+                new Collection<>(String.valueOf(userID), String.valueOf(recipeID))
+        );
+        updateDataIfNotNull();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static void removeSave(int userID, int recipeID) throws IOException {
+        executePostQuery(
+                "unsaveRecipe",
+                new Collection<>("userID", "recipeID"),
+                new Collection<>(String.valueOf(userID), String.valueOf(recipeID))
         );
         updateDataIfNotNull();
     }
