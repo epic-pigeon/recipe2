@@ -35,19 +35,11 @@ import android.widget.TextView;
 import com.kar.recipe.DBHandle.Collection;
 import com.kar.recipe.DBHandle.DBHandler;
 import com.kar.recipe.DataClasses.Data;
-import com.kar.recipe.DataClasses.Ingredient;
 import com.kar.recipe.DataClasses.Recipe;
-import com.kar.recipe.DataClasses.RecipeIngredient;
 
-import java.io.FileFilter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.util.Locale;
-import java.util.ServiceConfigurationError;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Filter;
-import java.util.stream.IntStream;
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener , SearchView.OnQueryTextListener {
@@ -130,9 +122,11 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    //Перезагружаю страницу в любой удобный момент
     @Override
     protected void onRestart() {
         super.onRestart();
+        //Если пользователь вошел в свой аккаунт
         if (GeneralData.user != null) {
             TextView textView_name = (TextView) findViewById(R.id.user_name);
             textView_name.setText(GeneralData.user.getName());
@@ -157,55 +151,52 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
+    //Если нажата какая-то кнопка на шторке - вызывается этот метод
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-
         if (id == R.id.nav_recipes) {
+            //Если нажаты рецепты
             if (GeneralData.user != null) {
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("only_saves", false);
                 startActivity(intent);
             } else Snackbar.make(getWindow().getDecorView().getRootView(), "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG).show();
         } else if (id == R.id.nav_favorite_recipes) {
+            //Иначе если нажаты любимые рецепты
             if (GeneralData.user != null) {
+                //Если мы вошли
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("only_saves", true);
                 startActivity(intent);
             } else Snackbar.make(getWindow().getDecorView().getRootView(), "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG).show();
+            //Иначе уведомление
         } else if (id == R.id.nav_sign_in) {
+            //Иначе если нажат вход в аккаунт
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         }
-        //@string/nav_header_title
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
+    //Адаптер для ListView (список блюд)
     private class DishAdapter extends BaseAdapter implements Filterable {
 
         private Collection<Recipe> current;
@@ -214,6 +205,7 @@ public class MainActivity extends AppCompatActivity
             this.current = current;
         }
 
+        //Фильтр для поиска блюд
         @Override
         public android.widget.Filter getFilter() {
             return new android.widget.Filter() {
@@ -221,33 +213,23 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 protected FilterResults performFiltering(CharSequence constraint) {
                     FilterResults filterResults = new FilterResults();
-                    Collection<Recipe> recipesNew = recipes.find(recipe -> {
-                        if (recipe.getName().toLowerCase().contains(constraint.toString().toLowerCase())) return true;
-                        return recipe.getIngredients().map(RecipeIngredient::getIngredient).findFirst(ingredient -> ingredient.getName().toLowerCase().contains(
-                                constraint.toString().toLowerCase()
-                        )) != null;
-                    });
-
-                    filterResults.count = recipesNew.size();
-                    filterResults.values = recipesNew;
-                    return filterResults;
-                }
-
-                /*@RequiresApi(api = Build.VERSION_CODES.N)
-                @Override
-                protected FilterResults performFiltering(CharSequence constraint) {
-                    FilterResults filterResults = new FilterResults();
                     Collection<Recipe> recipesNew = new Collection<>();
+                    //Разделяем все, что ввели в поиск по пробелам и присваиваем в массив
                     String[] ingredients = constraint.toString().toLowerCase().split(" ");
+                    //Проходим по всем рецептам
                     for (Recipe i : recipes) {
-                        boolean fl = true;
+                        boolean fl = true;//Подходит ли нам рецепт
+
+                        //Проходим по всему массиву, который ввели в поиск
                         for (String j : ingredients) {
+                            //Если в рецепте такого ингредиента нет и это не название блюда - выходим из цикла и говорим, что блюдо не подходит
                             if (i.getIngredients().findFirst(recipeIngredient -> recipeIngredient.getIngredient().getName().toLowerCase().contains(j)) == null &&
                             !i.getName().toLowerCase().contains(j)) {
                                 fl = false;
                                 break;
                             }
                         }
+                        //Если блюдо подходит и мы его еще не присваивали в результат
                         if (fl && recipesNew.indexOf(i) == -1 &&
                                 (!onlySaves || GeneralData.user.getSaves().findFirst(save -> save.getId() == i.getId()) != null)) {
                             recipesNew.add(i);
@@ -256,7 +238,7 @@ public class MainActivity extends AppCompatActivity
                     filterResults.count = recipesNew.size();
                     filterResults.values = recipesNew;
                     return filterResults;
-                }*/
+                }
 
                 @Override
                 protected void publishResults(CharSequence constraint, FilterResults results) {
@@ -281,15 +263,18 @@ public class MainActivity extends AppCompatActivity
             return current.get(position).getId();
         }
 
+
+        //Метод по инициализации "полоски" из списка рецептов
         @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             convertView = getLayoutInflater().inflate(R.layout.dishlayout, null);
 
-            ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView);
-            TextView textView = (TextView) convertView.findViewById(R.id.textView_name);
-            ImageButton imageButton = (ImageButton) convertView.findViewById(R.id.imageButton_favorite);
+            ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView);//фото рецепта
+            TextView textView = (TextView) convertView.findViewById(R.id.textView_name);//Название рецепта
+            ImageButton imageButton = (ImageButton) convertView.findViewById(R.id.imageButton_favorite);//Лайк
 
+            //Если мы вошли в аккаунт - расставим лайки блюдам
             if(GeneralData.user != null){
                 if (GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == current.get(position).getId()) != null){
                     imageButton.setImageResource(R.drawable.like);
@@ -304,6 +289,7 @@ public class MainActivity extends AppCompatActivity
                 imageButton.setSelected(false);
             }
 
+            //Если мы нажали на фото блюда - более подробный его рецепт
             imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -316,6 +302,7 @@ public class MainActivity extends AppCompatActivity
                 }
             });
 
+            //Если мы нажали лайк
             imageButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -387,6 +374,7 @@ public class MainActivity extends AppCompatActivity
             });
 
 
+            //Присваиваем фото блюда и название
             try {
                 imageView.setImageBitmap(current.get(position).getImage());
             } catch (IOException e) {
