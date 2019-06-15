@@ -164,17 +164,21 @@ public class SignUpActivity extends AppCompatActivity implements LoaderCallbacks
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
+        mPasswordResetView.setError(null);
 
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
+        String passwordReset = mPasswordResetView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
+        //TODO правильно выводить ошибки
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        if (TextUtils.isEmpty(password) || !isPasswordValid(password) || !password.equals(passwordReset)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
+            mPasswordResetView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
         }
@@ -182,10 +186,6 @@ public class SignUpActivity extends AppCompatActivity implements LoaderCallbacks
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
             mEmailView.setError(getString(R.string.error_field_required));
-            focusView = mEmailView;
-            cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
         }
@@ -197,6 +197,13 @@ public class SignUpActivity extends AppCompatActivity implements LoaderCallbacks
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
+
+            //TODO //TODO //TODO //TODO //TODO //TODO //TODO
+            //TODO //TODO //TODO //TODO //TODO //TODO //TODO
+            //Регистрация
+            //TODO //TODO //TODO //TODO //TODO //TODO //TODO
+            //TODO //TODO //TODO //TODO //TODO //TODO //TODO
+
             showProgress(true);
             mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
