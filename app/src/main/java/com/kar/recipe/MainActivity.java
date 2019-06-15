@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 protected FilterResults performFiltering(CharSequence constraint) {
                     FilterResults filterResults = new FilterResults();
-                    Collection<Recipe> recipesNew = recipes.find(recipe -> recipe.getName().toLowerCase().contains(constraint.toString().toLowerCase()));
+                    Collection<Recipe> recipesNew = new Collection<>();
                     String[] ingredients = constraint.toString().toLowerCase().split(" ");
                     for (Recipe i : recipes) {
                         boolean fl = true;
