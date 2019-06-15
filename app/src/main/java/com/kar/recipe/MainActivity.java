@@ -41,9 +41,13 @@ import com.kar.recipe.DataClasses.RecipeIngredient;
 
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.util.Locale;
 import java.util.ServiceConfigurationError;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Filter;
+import java.util.stream.IntStream;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener , SearchView.OnQueryTextListener {
@@ -51,6 +55,9 @@ public class MainActivity extends AppCompatActivity
     private static Collection<Recipe> recipes;
     private ListView listView;
     private DishAdapter dishAdapter;
+    private SearchView mSearchView;
+    private boolean onlySaves = false;
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -71,13 +78,22 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
+        Intent intent = getIntent();
+        if (intent != null) {
+            onlySaves = intent.getBooleanExtra("only_saves", false);
+            Log.d("onlysaves", onlySaves ? "true" : "false");
+        }
+
+        if (onlySaves) {
+            recipes = recipes.find(recipe -> GeneralData.user.getSaves().findFirst(recipe1 -> recipe.getId() == recipe1.getId()) != null);
+        }
 
         listView = (ListView) findViewById(R.id.listView);
         listView.setTextFilterEnabled(true);
         dishAdapter = new DishAdapter(recipes);
         listView.setAdapter(dishAdapter);
 
-        SearchView mSearchView = (SearchView) findViewById(R.id.searchView_dish);
+        mSearchView = (SearchView) findViewById(R.id.searchView_dish);
         mSearchView.setIconifiedByDefault(false);
         mSearchView.setOnQueryTextListener(this);
         mSearchView.setSubmitButtonEnabled(true);
@@ -169,14 +185,17 @@ public class MainActivity extends AppCompatActivity
 
 
         if (id == R.id.nav_recipes) {
-            super.onRestart();
+            if (GeneralData.user != null) {
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("only_saves", false);
+                startActivity(intent);
+            } else Snackbar.make(getWindow().getDecorView().getRootView(), "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG).show();
         } else if (id == R.id.nav_favorite_recipes) {
             if (GeneralData.user != null) {
-                //Intent intent = new Intent(this, FavoriteRecipesActivity.class);
-                //startActivity(intent);
-            }else{
-                //TODO
-            }
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("only_saves", true);
+                startActivity(intent);
+            } else Snackbar.make(getWindow().getDecorView().getRootView(), "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG).show();
         } else if (id == R.id.nav_search) {
 
         } else if (id == R.id.nav_sign_in) {
@@ -200,17 +219,23 @@ public class MainActivity extends AppCompatActivity
         @Override
         public android.widget.Filter getFilter() {
             return new android.widget.Filter() {
-              /*  @RequiresApi(api = Build.VERSION_CODES.N)
+                @RequiresApi(api = Build.VERSION_CODES.N)
                 @Override
                 protected FilterResults performFiltering(CharSequence constraint) {
                     FilterResults filterResults = new FilterResults();
-                    Collection<Recipe> recipesNew = recipes.find(recipe -> recipe.getName().toLowerCase().contains(constraint.toString().toLowerCase()));
+                    Collection<Recipe> recipesNew = recipes.find(recipe -> {
+                        if (recipe.getName().toLowerCase().contains(constraint.toString().toLowerCase())) return true;
+                        return recipe.getIngredients().map(RecipeIngredient::getIngredient).findFirst(ingredient -> ingredient.getName().toLowerCase().contains(
+                                constraint.toString().toLowerCase()
+                        )) != null;
+                    });
+
                     filterResults.count = recipesNew.size();
                     filterResults.values = recipesNew;
                     return filterResults;
-                }*/
+                }
 
-                @RequiresApi(api = Build.VERSION_CODES.N)
+                /*@RequiresApi(api = Build.VERSION_CODES.N)
                 @Override
                 protected FilterResults performFiltering(CharSequence constraint) {
                     FilterResults filterResults = new FilterResults();
@@ -225,14 +250,15 @@ public class MainActivity extends AppCompatActivity
                                 break;
                             }
                         }
-                        if (fl && recipesNew.indexOf(i) == -1) {
+                        if (fl && recipesNew.indexOf(i) == -1 &&
+                                (!onlySaves || GeneralData.user.getSaves().findFirst(save -> save.getId() == i.getId()) != null)) {
                             recipesNew.add(i);
                         }
                     }
                     filterResults.count = recipesNew.size();
                     filterResults.values = recipesNew;
                     return filterResults;
-                }
+                }*/
 
                 @Override
                 protected void publishResults(CharSequence constraint, FilterResults results) {
@@ -267,11 +293,7 @@ public class MainActivity extends AppCompatActivity
             ImageButton imageButton = (ImageButton) convertView.findViewById(R.id.imageButton_favorite);
 
             if(GeneralData.user != null){
-                Log.d("my_debug1", current.get(0).toString());
-                Log.d("my_debug2", GeneralData.user.getSaves().toString());
-                Log.d("my_debug3", String.valueOf(GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == current.get(position).getId())));
                 if (GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == current.get(position).getId()) != null){
-                    Log.d("my_debug4", "got here");
                     imageButton.setImageResource(R.drawable.like);
                     imageButton.setSelected(true);
                 }else{
@@ -292,7 +314,6 @@ public class MainActivity extends AppCompatActivity
                     Bundle bundle = new Bundle();
                     bundle.putSerializable("recipe", recipe);
                     intent.putExtra("recipe_bundle", bundle);
-                    Log.d("intent", recipe.getIngredients().toString());
                     startActivity(intent);
                 }
             });
@@ -324,6 +345,9 @@ public class MainActivity extends AppCompatActivity
                                 protected void onPostExecute(Data data) {
                                     recipes = data.getRecipes();
                                     GeneralData.user = data.getUsers().findFirst(user -> user.getId() == GeneralData.user.getId());
+                                    if (onlySaves) {
+                                        recipes = recipes.find(recipe -> GeneralData.user.getSaves().findFirst(recipe1 -> recipe.getId() == recipe1.getId()) != null);
+                                    }
                                     notifyDataSetChanged();
                                 }
                             }.execute();
@@ -349,6 +373,9 @@ public class MainActivity extends AppCompatActivity
                                 protected void onPostExecute(Data data) {
                                     recipes = data.getRecipes();
                                     GeneralData.user = data.getUsers().findFirst(user -> user.getId() == GeneralData.user.getId());
+                                    if (onlySaves) {
+                                        recipes = recipes.find(recipe -> GeneralData.user.getSaves().findFirst(recipe1 -> recipe.getId() == recipe1.getId()) != null);
+                                    }
                                     notifyDataSetChanged();
                                 }
                             }.execute();
