@@ -141,17 +141,17 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        TextView textView = (TextView) findViewById(R.id.my_text_view);
+
 
         if (id == R.id.nav_recipes) {
             // Handle the camera action
-            textView.setText("Рецепты");
+
         } else if (id == R.id.nav_favorite_recipes) {
-            textView.setText("Любимые Рецепты");
+
         } else if (id == R.id.nav_search) {
-            textView.setText("Поиск");
+
         } else if (id == R.id.nav_sign_in) {
-            textView.setText("Войти");
+
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         }
@@ -190,11 +190,14 @@ public class MainActivity extends AppCompatActivity
             if(GeneralData.user != null){
                 if (GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == recipes.get(position).getId()) != null){
                     imageButton.setImageResource(R.drawable.like);
+                    imageButton.setSelected(true);
                 }else{
                     imageButton.setImageResource(R.drawable.not_like);
+                    imageButton.setSelected(false);
                 }
             }else{
                 imageButton.setImageResource(R.drawable.not_like);
+                imageButton.setSelected(false);
             }
 
             imageButton.setOnClickListener(new View.OnClickListener() {
