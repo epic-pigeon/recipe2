@@ -215,9 +215,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // form field with an error.
             focusView.requestFocus();
         } else {
-            Log.d("hello" , "kar2" + isLogin(email , password));
             if (isLogin(email , password)) {
-
                 // Show a progress spinner, and kick off a background task to
                 // perform the user login attempt.
                 showProgress(true);
@@ -255,13 +253,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     //TODO
     @RequiresApi(api = Build.VERSION_CODES.N)
     private boolean isLogin( String email,  String password){
-        /*GeneralData generalData = new GeneralData();
-        if (email.equals(generalData.getLogin()) && password.equals(generalData.getPassword())){
-            return true;
-        }
-        return false;*/
-
-        Log.d("hello" , "Nikita Loh");
         CountDownLatch countDownLatch = new CountDownLatch(1);
         new DataTask(countDownLatch).execute();
         try {
@@ -270,7 +261,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             e.printStackTrace();
         }
         if (data.getUsers().findFirst(user -> user.getName().equals(email) && user.getPassword().equals(password)) != null){
-            Log.d("hello" , "Nikita krasava");
+            GeneralData.user = data.getUsers().findFirst(user -> user.getName().equals(email) && user.getPassword().equals(password));
+            Log.d("hello" , GeneralData.user.toString());
             return true;
         } else {
             return false;
