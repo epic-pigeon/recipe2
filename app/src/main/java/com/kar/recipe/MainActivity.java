@@ -196,8 +196,6 @@ public class MainActivity extends AppCompatActivity
                 intent.putExtra("only_saves", true);
                 startActivity(intent);
             } else Snackbar.make(getWindow().getDecorView().getRootView(), "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG).show();
-        } else if (id == R.id.nav_search) {
-
         } else if (id == R.id.nav_sign_in) {
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);

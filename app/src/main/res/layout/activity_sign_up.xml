@@ -54,7 +54,7 @@
                     android:id="@+id/password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_password"
+                    android:hint="Пароль"
                     android:imeActionId="6"
                     android:imeActionLabel="@string/action_sign_in_short"
                     android:imeOptions="actionUnspecified"
@@ -72,7 +72,7 @@
                     android:id="@+id/password_reset"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Reset Password"
+                    android:hint="Повторите Пароль"
                     android:imeActionId="6"
                     android:imeActionLabel="@string/action_sign_in_short"
                     android:imeOptions="actionUnspecified"
@@ -88,7 +88,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Sign Up"
+                android:text="Зарегестрироваться"
                 android:textStyle="bold" />
 
         </LinearLayout>
