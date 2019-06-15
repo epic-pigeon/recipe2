@@ -1,9 +1,13 @@
 package com.kar.recipe;
 
 import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,6 +23,14 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.kar.recipe.DBHandle.Collection;
+import com.kar.recipe.DBHandle.DBHandler;
+import com.kar.recipe.DataClasses.Data;
+import com.kar.recipe.DataClasses.Recipe;
+
+import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -27,6 +39,31 @@ public class MainActivity extends AppCompatActivity
     private int[] IMAGES = {R.drawable.golobci, R.drawable.pelmeni, R.drawable.zapekanka, R.drawable.sandwich, R.drawable.omlet,
             R.drawable.fri , R.drawable.borch, R.drawable.okroshka, R.drawable.krabpviy_salat, R.drawable.olive, R.drawable.karp,
             R.drawable.yablochniy_shtrudel, R.drawable.ekler, R.drawable.cezar_salat};
+
+    private static Collection<Recipe> recipes;
+
+    private static class GetRecipesTask extends AsyncTask<Void, Void, Collection<Recipe>> {
+        private CountDownLatch latch;
+
+        public GetRecipesTask(CountDownLatch latch) {
+            this.latch = latch;
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        @Override
+        protected Collection<Recipe> doInBackground(Void... voids) {
+            try {
+                Collection<Recipe> recipes1 = DBHandler.getData().getRecipes();
+                Log.d("karkar", recipes1.toString());
+                recipes = recipes1;
+                latch.countDown();
+                return recipes1;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +80,19 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        GetRecipesTask task = new GetRecipesTask(latch);
+        task.execute();
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        Log.d("karkar", "kar");
 
         ListView listView = (ListView) findViewById(R.id.listView);
         DishAdapter dishAdapter = new DishAdapter();
@@ -118,7 +168,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public int getCount() {
-            return namesOfRecipes.length;
+            return recipes.size();
         }
 
         @Override
@@ -138,9 +188,13 @@ public class MainActivity extends AppCompatActivity
             ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView);
             TextView textView = (TextView) convertView.findViewById(R.id.textView_name);
 
-            imageView.setImageResource(IMAGES[position]);
+            try {
+                imageView.setImageBitmap(recipes.get(position).getImage());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-            textView.setText(namesOfRecipes[position]);
+            textView.setText(recipes.get(position).getName());
 
             return convertView;
         }
