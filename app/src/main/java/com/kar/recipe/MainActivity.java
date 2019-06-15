@@ -1,10 +1,12 @@
 package com.kar.recipe;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -45,6 +47,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -123,6 +127,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         TextView textView = (TextView) findViewById(R.id.my_text_view);
+
         if (id == R.id.nav_recipes) {
             // Handle the camera action
             textView.setText("Рецепты");
@@ -174,8 +179,12 @@ public class MainActivity extends AppCompatActivity
                     imageButton.setSelected(!imageButton.isSelected());
                     if (imageButton.isSelected()){
                         imageButton.setImageResource(R.drawable.ic_menu_camera);
+                        Snackbar.make(view, "Добавлено к помеченным", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
                     }else{
                         imageButton.setImageResource(R.drawable.ic_menu_gallery);
+                        Snackbar.make(view, "Удалено из помеченных", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
                     }
                 }
             });

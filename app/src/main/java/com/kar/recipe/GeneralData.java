@@ -1,22 +1,7 @@
 package com.kar.recipe;
 
+import com.kar.recipe.DataClasses.User;
+
 public class GeneralData {
-    private String login = "Tony";
-    private String password = "karkar";
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public static User user;
 }
