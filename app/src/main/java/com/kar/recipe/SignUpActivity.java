@@ -226,9 +226,6 @@ public class SignUpActivity extends AppCompatActivity implements LoaderCallbacks
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
 
-            //TODO //TODO //TODO //TODO //TODO //TODO //TODO
-            //TODO //TODO //TODO //TODO //TODO //TODO //TODO
-
             CountDownLatch latch = new CountDownLatch(1);
 
             new AsyncTask<Void, Void, Void>() {
@@ -248,8 +245,6 @@ public class SignUpActivity extends AppCompatActivity implements LoaderCallbacks
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            //TODO //TODO //TODO //TODO //TODO //TODO //TODO
-            //TODO //TODO //TODO //TODO //TODO //TODO //TODO
 
             showProgress(true);
             mAuthTask = new UserLoginTask(email, password);

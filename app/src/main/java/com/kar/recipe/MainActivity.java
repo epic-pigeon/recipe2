@@ -34,7 +34,9 @@ import android.widget.TextView;
 
 import com.kar.recipe.DBHandle.Collection;
 import com.kar.recipe.DBHandle.DBHandler;
+import com.kar.recipe.DataClasses.Ingredient;
 import com.kar.recipe.DataClasses.Recipe;
+import com.kar.recipe.DataClasses.RecipeIngredient;
 
 import java.io.FileFilter;
 import java.io.IOException;
@@ -44,12 +46,6 @@ import java.util.logging.Filter;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener , SearchView.OnQueryTextListener {
-
-    private String[] namesOfRecipes = {"Голубцы" , "Пельмени" , "Запеканка" , "Бутереброд", "Омлет" , "Картошка Фри" ,
-            "Борщ", "Окрошка", "Крабовый салат", "Оливье", "Запеченный карп" , "Яблочный штрудель" , "Эклер" , "Салат Цезарь"};
-    private int[] IMAGES = {R.drawable.golobci, R.drawable.pelmeni, R.drawable.zapekanka, R.drawable.sandwich, R.drawable.omlet,
-            R.drawable.fri , R.drawable.borch, R.drawable.okroshka, R.drawable.krabpviy_salat, R.drawable.olive, R.drawable.karp,
-            R.drawable.yablochniy_shtrudel, R.drawable.ekler, R.drawable.cezar_salat};
 
     private static Collection<Recipe> recipes;
     private ListView listView;
@@ -172,14 +168,17 @@ public class MainActivity extends AppCompatActivity
 
 
         if (id == R.id.nav_recipes) {
-            // Handle the camera action
-
+            super.onRestart();
         } else if (id == R.id.nav_favorite_recipes) {
-
+            if (GeneralData.user != null) {
+                //Intent intent = new Intent(this, FavoriteRecipesActivity.class);
+                //startActivity(intent);
+            }else{
+                //TODO
+            }
         } else if (id == R.id.nav_search) {
 
         } else if (id == R.id.nav_sign_in) {
-
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         }
@@ -200,11 +199,35 @@ public class MainActivity extends AppCompatActivity
         @Override
         public android.widget.Filter getFilter() {
             return new android.widget.Filter() {
+              /*  @RequiresApi(api = Build.VERSION_CODES.N)
+                @Override
+                protected FilterResults performFiltering(CharSequence constraint) {
+                    FilterResults filterResults = new FilterResults();
+                    Collection<Recipe> recipesNew = recipes.find(recipe -> recipe.getName().toLowerCase().contains(constraint.toString().toLowerCase()));
+                    filterResults.count = recipesNew.size();
+                    filterResults.values = recipesNew;
+                    return filterResults;
+                }*/
+
                 @RequiresApi(api = Build.VERSION_CODES.N)
                 @Override
                 protected FilterResults performFiltering(CharSequence constraint) {
                     FilterResults filterResults = new FilterResults();
                     Collection<Recipe> recipesNew = recipes.find(recipe -> recipe.getName().toLowerCase().contains(constraint.toString().toLowerCase()));
+                    String[] ingredients = constraint.toString().toLowerCase().split(" ");
+                    for (Recipe i : recipes) {
+                        boolean fl = true;
+                        for (String j : ingredients) {
+                            if (i.getIngredients().findFirst(recipeIngredient -> recipeIngredient.getIngredient().getName().toLowerCase().contains(j)) == null &&
+                            !i.getName().toLowerCase().contains(j)) {
+                                fl = false;
+                                break;
+                            }
+                        }
+                        if (fl && recipesNew.indexOf(i) == -1) {
+                            recipesNew.add(i);
+                        }
+                    }
                     filterResults.count = recipesNew.size();
                     filterResults.values = recipesNew;
                     return filterResults;
@@ -217,8 +240,6 @@ public class MainActivity extends AppCompatActivity
                 }
             };
         }
-
-
 
         @Override
         public int getCount() {
@@ -253,6 +274,7 @@ public class MainActivity extends AppCompatActivity
                     imageButton.setImageResource(R.drawable.like);
                     imageButton.setSelected(true);
                 }else{
+
                     imageButton.setImageResource(R.drawable.not_like);
                     imageButton.setSelected(false);
                 }

@@ -21,4 +21,5 @@
     </string>
     <string name="title_activity_sign_up">Sign up</string>
     <string name="button_sign_up">Button</string>
+    <string name="title_activity_favorite_recipes">FavoriteRecipesActivity</string>
 </resources>
