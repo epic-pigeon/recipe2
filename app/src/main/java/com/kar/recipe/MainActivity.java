@@ -11,6 +11,7 @@ import android.os.Debug;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -24,6 +25,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -34,12 +36,14 @@ import com.kar.recipe.DBHandle.Collection;
 import com.kar.recipe.DBHandle.DBHandler;
 import com.kar.recipe.DataClasses.Recipe;
 
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ServiceConfigurationError;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Filter;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener , SearchView.OnQueryTextListener {
 
     private String[] namesOfRecipes = {"Голубцы" , "Пельмени" , "Запеканка" , "Бутереброд", "Омлет" , "Картошка Фри" ,
             "Борщ", "Окрошка", "Крабовый салат", "Оливье", "Запеченный карп" , "Яблочный штрудель" , "Эклер" , "Салат Цезарь"};
@@ -48,7 +52,7 @@ public class MainActivity extends AppCompatActivity
             R.drawable.yablochniy_shtrudel, R.drawable.ekler, R.drawable.cezar_salat};
 
     private static Collection<Recipe> recipes;
-
+    private ListView listView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -70,12 +74,16 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-        ListView listView = (ListView) findViewById(R.id.listView);
+        listView = (ListView) findViewById(R.id.listView);
         DishAdapter dishAdapter = new DishAdapter();
         listView.setAdapter(dishAdapter);
+        listView.setTextFilterEnabled(true);
 
-        SearchView searchView = (SearchView) findViewById(R.id.searchView_dish);
-
+        SearchView mSearchView = (SearchView) findViewById(R.id.searchView_dish);
+        mSearchView.setIconifiedByDefault(false);
+        mSearchView.setOnQueryTextListener(this);
+        mSearchView.setSubmitButtonEnabled(true);
+        mSearchView.setQueryHint("Search Here");
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -85,6 +93,21 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        if (TextUtils.isEmpty(newText)) {
+            listView.clearTextFilter();
+        } else {
+            listView.setFilterText(newText);
+        }
+        return true;
     }
 
     @Override
@@ -159,16 +182,41 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    class DishAdapter extends BaseAdapter{
+    class DishAdapter extends BaseAdapter implements Filterable {
+
+        private Collection<Recipe> current = recipes;
+
+        @Override
+        public android.widget.Filter getFilter() {
+            return new android.widget.Filter() {
+                @RequiresApi(api = Build.VERSION_CODES.N)
+                @Override
+                protected FilterResults performFiltering(CharSequence constraint) {
+                    FilterResults filterResults = new FilterResults();
+                    Collection<Recipe> recipesNew = recipes.find(recipe -> recipe.getName().toLowerCase().contains(constraint.toString().toLowerCase()));
+                    filterResults.count = recipesNew.size();
+                    filterResults.values = recipesNew;
+                    return filterResults;
+                }
+
+                @Override
+                protected void publishResults(CharSequence constraint, FilterResults results) {
+                    current = (Collection<Recipe>) results.values;
+                    notifyDataSetChanged();
+                }
+            };
+        }
+
+
 
         @Override
         public int getCount() {
-            return recipes.size();
+            return current.size();
         }
 
         @Override
         public Object getItem(int position) {
-            return recipes.get(position);
+            return current.get(position);
         }
 
         @Override
@@ -186,7 +234,7 @@ public class MainActivity extends AppCompatActivity
             ImageButton imageButton = (ImageButton) convertView.findViewById(R.id.imageButton_favorite);
 
             if(GeneralData.user != null){
-                if (GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == recipes.get(position).getId()) != null){
+                if (GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == current.get(position).getId()) != null){
                     imageButton.setImageResource(R.drawable.like);
                     imageButton.setSelected(true);
                 }else{
@@ -201,7 +249,7 @@ public class MainActivity extends AppCompatActivity
             imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Recipe recipe = recipes.get(position);
+                    Recipe recipe = current.get(position);
                     Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
                     Bundle bundle = new Bundle();
                     bundle.putSerializable("recipe", recipe);
@@ -225,7 +273,7 @@ public class MainActivity extends AppCompatActivity
                                 @Override
                                 protected Void doInBackground(Void... voids) {
                                     try {
-                                        DBHandler.addSave(GeneralData.user.getId(), recipes.get(position).getId());
+                                        DBHandler.addSave(GeneralData.user.getId(), current.get(position).getId());
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
@@ -241,7 +289,7 @@ public class MainActivity extends AppCompatActivity
                                 @Override
                                 protected Void doInBackground(Void... voids) {
                                     try {
-                                        DBHandler.removeSave(GeneralData.user.getId(), recipes.get(position).getId());
+                                        DBHandler.removeSave(GeneralData.user.getId(), current.get(position).getId());
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
@@ -258,12 +306,12 @@ public class MainActivity extends AppCompatActivity
 
 
             try {
-                imageView.setImageBitmap(recipes.get(position).getImage());
+                imageView.setImageBitmap(current.get(position).getImage());
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            textView.setText(recipes.get(position).getName());
+            textView.setText(current.get(position).getName());
 
             return convertView;
         }
