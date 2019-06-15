@@ -178,6 +178,7 @@ public class MainActivity extends AppCompatActivity
             return 0;
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             convertView = getLayoutInflater().inflate(R.layout.dishlayout, null);
@@ -196,10 +197,34 @@ public class MainActivity extends AppCompatActivity
                         imageButton.setImageResource(R.drawable.ic_menu_camera);
                         Snackbar.make(view, "Добавлено к помеченным", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
+                        new AsyncTask<Void, Void, Void>() {
+                            @RequiresApi(api = Build.VERSION_CODES.N)
+                            @Override
+                            protected Void doInBackground(Void... voids) {
+                                try {
+                                    DBHandler.addSave(GeneralData.user.getId(), recipes.get(position).getId());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                return null;
+                            }
+                        }.execute();
                     }else{
                         imageButton.setImageResource(R.drawable.ic_menu_gallery);
                         Snackbar.make(view, "Удалено из помеченных", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
+                        new AsyncTask<Void, Void, Void>() {
+                            @RequiresApi(api = Build.VERSION_CODES.N)
+                            @Override
+                            protected Void doInBackground(Void... voids) {
+                                try {
+                                    DBHandler.removeSave(GeneralData.user.getId(), recipes.get(position).getId());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                return null;
+                            }
+                        }.execute();
                     }
                 }
             });
