@@ -85,7 +85,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
+                    try {
+                        attemptLogin();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     return true;
                 }
                 return false;
@@ -97,7 +101,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View view) {
-                attemptLogin();
+                try {
+                    attemptLogin();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -168,7 +176,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * errors are presented and no actual login attempt is made.
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
-    private void attemptLogin() {
+    private void attemptLogin() throws IOException {
         if (mAuthTask != null) {
             return;
         }
@@ -184,16 +192,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         boolean cancel = false;
         View focusView = null;
 
-        // Check for a valid password, if the user entered one.
-        if (TextUtils.isEmpty(password) || !isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
-            focusView = mPasswordView;
-            cancel = true;
-        }
-
         if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
+            mEmailView.setError("Введите логин!");
             focusView = mEmailView;
+            cancel = true;
+        }else if (DBHandler.getData().getUsers().findFirst(user -> user.getName().equals(email)) == null){
+            mEmailView.setError("Пользователя с таким именем не существует!");
+            focusView = mEmailView;
+            cancel = true;
+        }else if (DBHandler.getData().getUsers().findFirst(user -> user.getName().equals(email) && user.getPassword().equals(password)) == null){
+            mPasswordView.setError("Неправильный пароль!");
+            focusView = mPasswordView;
             cancel = true;
         }
 
