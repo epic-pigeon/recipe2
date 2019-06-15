@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -29,6 +30,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.kar.recipe.DBHandle.DBHandler;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,10 +77,15 @@ public class SignUpActivity extends AppCompatActivity implements LoaderCallbacks
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
+                    try {
+                        attemptLogin();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     return true;
                 }
                 return false;
@@ -85,10 +94,15 @@ public class SignUpActivity extends AppCompatActivity implements LoaderCallbacks
 
         mPasswordResetView = (EditText) findViewById(R.id.password_reset);
         mPasswordResetView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
+                    try {
+                        attemptLogin();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     return true;
                 }
                 return false;
@@ -97,9 +111,14 @@ public class SignUpActivity extends AppCompatActivity implements LoaderCallbacks
 
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_up_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View view) {
-                attemptLogin();
+                try {
+                    attemptLogin();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -156,7 +175,8 @@ public class SignUpActivity extends AppCompatActivity implements LoaderCallbacks
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private void attemptLogin() {
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void attemptLogin() throws IOException {
         if (mAuthTask != null) {
             return;
         }
@@ -174,18 +194,24 @@ public class SignUpActivity extends AppCompatActivity implements LoaderCallbacks
         boolean cancel = false;
         View focusView = null;
 
-        //TODO правильно выводить ошибки
-        // Check for a valid password, if the user entered one.
-        if (TextUtils.isEmpty(password) || !isPasswordValid(password) || !password.equals(passwordReset)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
-            mPasswordResetView.setError(getString(R.string.error_invalid_password));
+        if (!isPasswordValid(password)){
+            mPasswordView.setError("В вашем пароле слишком мало символов!");
+            focusView = mPasswordView;
+            cancel = true;
+        }else if (!password.equals(passwordReset)){
+            mPasswordView.setError("Пароли не равны");
+            mPasswordResetView.setError("Пароли не равны");
             focusView = mPasswordView;
             cancel = true;
         }
 
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
+            mEmailView.setError("Введите логин!");
+            focusView = mEmailView;
+            cancel = true;
+        }else if (DBHandler.getData().getUsers().findFirst(user -> user.getName().equals(email)) != null){
+            mEmailView.setError("Такой пользователь уже существует!");
             focusView = mEmailView;
             cancel = true;
         }
