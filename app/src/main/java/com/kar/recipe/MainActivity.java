@@ -190,7 +190,13 @@ public class MainActivity extends AppCompatActivity
             //Иначе если нажат вход в аккаунт
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
-        }
+        } else if (id == R.id.nav_exit) {
+            if (GeneralData.user != null) {
+                GeneralData.user = null;
+                startActivity(new Intent(this, MainActivity.class));
+            } else Snackbar.make(getWindow().getDecorView().getRootView(), "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG).show();
+
+        } else;
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;

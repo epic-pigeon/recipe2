@@ -16,6 +16,10 @@
             android:id="@+id/nav_sign_in"
             android:icon="@android:drawable/ic_lock_lock"
             android:title="Войти" />
+        <item
+            android:id="@+id/nav_exit"
+            android:icon="@android:drawable/ic_lock_lock"
+            android:title="Выйти" />
     </group>
 
 </menu>
