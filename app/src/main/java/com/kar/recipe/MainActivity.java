@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity
 
     private static Collection<Recipe> recipes;
     private ListView listView;
+    private DishAdapter dishAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -75,9 +76,9 @@ public class MainActivity extends AppCompatActivity
 
 
         listView = (ListView) findViewById(R.id.listView);
-        DishAdapter dishAdapter = new DishAdapter();
-        listView.setAdapter(dishAdapter);
         listView.setTextFilterEnabled(true);
+        dishAdapter = new DishAdapter(recipes);
+        listView.setAdapter(dishAdapter);
 
         SearchView mSearchView = (SearchView) findViewById(R.id.searchView_dish);
         mSearchView.setIconifiedByDefault(false);
@@ -98,6 +99,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onQueryTextSubmit(String query) {
         return false;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        dishAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -182,9 +189,13 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    class DishAdapter extends BaseAdapter implements Filterable {
+    private class DishAdapter extends BaseAdapter implements Filterable {
 
-        private Collection<Recipe> current = recipes;
+        private Collection<Recipe> current;
+
+        public DishAdapter(Collection<Recipe> current) {
+            this.current = current;
+        }
 
         @Override
         public android.widget.Filter getFilter() {
@@ -221,7 +232,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public long getItemId(int position) {
-            return 0;
+            return current.get(position).getId();
         }
 
         @RequiresApi(api = Build.VERSION_CODES.N)
@@ -234,7 +245,11 @@ public class MainActivity extends AppCompatActivity
             ImageButton imageButton = (ImageButton) convertView.findViewById(R.id.imageButton_favorite);
 
             if(GeneralData.user != null){
+                Log.d("my_debug1", current.get(0).toString());
+                Log.d("my_debug2", GeneralData.user.getSaves().toString());
+                Log.d("my_debug3", String.valueOf(GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == current.get(position).getId())));
                 if (GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == current.get(position).getId()) != null){
+                    Log.d("my_debug4", "got here");
                     imageButton.setImageResource(R.drawable.like);
                     imageButton.setSelected(true);
                 }else{
@@ -315,6 +330,10 @@ public class MainActivity extends AppCompatActivity
 
             return convertView;
         }
+
+        public void notifyDataSetChanged() {
+            super.notifyDataSetChanged();
+        }
     }
     private static class GetRecipesTask extends AsyncTask<Void, Void, Collection<Recipe>> {
         private CountDownLatch latch;
@@ -328,7 +347,6 @@ public class MainActivity extends AppCompatActivity
         protected Collection<Recipe> doInBackground(Void... voids) {
             try {
                 Collection<Recipe> recipes1 = DBHandler.getData().getRecipes();
-                Log.d("hello", recipes1.toString());
                 recipes = recipes1;
                 latch.countDown();
                 return recipes1;
