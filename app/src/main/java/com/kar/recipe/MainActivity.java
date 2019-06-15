@@ -187,44 +187,57 @@ public class MainActivity extends AppCompatActivity
             TextView textView = (TextView) convertView.findViewById(R.id.textView_name);
             ImageButton imageButton = (ImageButton) convertView.findViewById(R.id.imageButton_favorite);
 
-            imageButton.setImageResource(R.drawable.ic_menu_gallery);
+            if(GeneralData.user != null){
+                if (GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == recipes.get(position).getId()) != null){
+                    imageButton.setImageResource(R.drawable.like);
+                }else{
+                    imageButton.setImageResource(R.drawable.not_like);
+                }
+            }else{
+                imageButton.setImageResource(R.drawable.not_like);
+            }
 
             imageButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    imageButton.setSelected(!imageButton.isSelected());
-                    if (imageButton.isSelected()){
-                        imageButton.setImageResource(R.drawable.ic_menu_camera);
-                        Snackbar.make(view, "Добавлено к помеченным", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                        new AsyncTask<Void, Void, Void>() {
-                            @RequiresApi(api = Build.VERSION_CODES.N)
-                            @Override
-                            protected Void doInBackground(Void... voids) {
-                                try {
-                                    DBHandler.addSave(GeneralData.user.getId(), recipes.get(position).getId());
-                                } catch (IOException e) {
-                                    e.printStackTrace();
+                    if (GeneralData.user != null) {
+                        imageButton.setSelected(!imageButton.isSelected());
+                        if (imageButton.isSelected()) {
+                            imageButton.setImageResource(R.drawable.like);
+                            Snackbar.make(view, "Добавлено к помеченным", Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show();
+                            new AsyncTask<Void, Void, Void>() {
+                                @RequiresApi(api = Build.VERSION_CODES.N)
+                                @Override
+                                protected Void doInBackground(Void... voids) {
+                                    try {
+                                        DBHandler.addSave(GeneralData.user.getId(), recipes.get(position).getId());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    return null;
                                 }
-                                return null;
-                            }
-                        }.execute();
+                            }.execute();
+                        } else {
+                            imageButton.setImageResource(R.drawable.not_like);
+                            Snackbar.make(view, "Удалено из помеченных", Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show();
+                            new AsyncTask<Void, Void, Void>() {
+                                @RequiresApi(api = Build.VERSION_CODES.N)
+                                @Override
+                                protected Void doInBackground(Void... voids) {
+                                    try {
+                                        DBHandler.removeSave(GeneralData.user.getId(), recipes.get(position).getId());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    return null;
+                                }
+                            }.execute();
+                        }
                     }else{
-                        imageButton.setImageResource(R.drawable.ic_menu_gallery);
-                        Snackbar.make(view, "Удалено из помеченных", Snackbar.LENGTH_LONG)
+                        Snackbar.make(view, "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
-                        new AsyncTask<Void, Void, Void>() {
-                            @RequiresApi(api = Build.VERSION_CODES.N)
-                            @Override
-                            protected Void doInBackground(Void... voids) {
-                                try {
-                                    DBHandler.removeSave(GeneralData.user.getId(), recipes.get(position).getId());
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                return null;
-                            }
-                        }.execute();
                     }
                 }
             });
