@@ -3,6 +3,7 @@ package com.kar.recipe;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -38,7 +39,11 @@ import com.kar.recipe.DataClasses.Data;
 import com.kar.recipe.DataClasses.Recipe;
 
 import java.io.IOException;
+import java.util.BitSet;
+import java.util.PrimitiveIterator;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 
 public class MainActivity extends AppCompatActivity
@@ -383,6 +388,7 @@ public class MainActivity extends AppCompatActivity
 
 
             //Присваиваем фото блюда и название
+
             try {
                 imageView.setImageBitmap(current.get(position).getImage());
             } catch (IOException e) {
@@ -396,6 +402,27 @@ public class MainActivity extends AppCompatActivity
 
         public void notifyDataSetChanged() {
             super.notifyDataSetChanged();
+        }
+    }
+    private static class GetImageTask extends AsyncTask<Void, Void, Bitmap> {
+        private Supplier<Bitmap> supplier;
+        private Consumer<Bitmap> consumer;
+
+        public GetImageTask(Supplier<Bitmap> supplier, Consumer<Bitmap> consumer) {
+            this.supplier = supplier;
+            this.consumer = consumer;
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        @Override
+        protected Bitmap doInBackground(Void... voids) {
+            return supplier.get();
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            consumer.accept(bitmap);
         }
     }
     private static class GetRecipesTask extends AsyncTask<Void, Void, Collection<Recipe>> {
