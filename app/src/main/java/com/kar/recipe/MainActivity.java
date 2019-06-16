@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -39,6 +40,9 @@ import com.kar.recipe.DataClasses.Data;
 import com.kar.recipe.DataClasses.Recipe;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.BitSet;
 import java.util.PrimitiveIterator;
 import java.util.concurrent.CountDownLatch;
@@ -389,11 +393,7 @@ public class MainActivity extends AppCompatActivity
 
             //Присваиваем фото блюда и название
 
-            try {
-                imageView.setImageBitmap(current.get(position).getImage());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            current.get(position).getImageAsync(imageView::setImageBitmap);
 
             textView.setText(current.get(position).getName());
 
@@ -446,4 +446,5 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
+
 }

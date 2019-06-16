@@ -3,6 +3,8 @@ package com.kar.recipe.DataClasses;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 
 import com.kar.recipe.DBHandle.Collection;
 import com.kar.recipe.DBHandle.Constants;
@@ -10,6 +12,7 @@ import com.kar.recipe.DBHandle.DBHandler;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 
 public class Recipe extends DataClass {
     private int id;
@@ -59,6 +62,27 @@ public class Recipe extends DataClass {
     public Bitmap getImage() throws IOException {
         if (image == null) updateImage();
         return image;
+    }
+    public void getImageAsync(Consumer<Bitmap> callback) {
+        final Bitmap[] bitmap = new Bitmap[1];
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                try {
+                    bitmap[0] = image == null ? DBHandler.loadImageViaUrl(Constants.SERVER.getRecipePhotoURL(photo)) : image;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                image = bitmap[0];
+                callback.accept(image);
+            }
+        }.execute();
     }
     public void updateImage() throws IOException {
         image = fetchImage();
