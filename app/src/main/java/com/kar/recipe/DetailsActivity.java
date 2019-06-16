@@ -33,11 +33,7 @@ public class DetailsActivity extends Activity {
         }
         description.append(recipe.getCooking());
         textView.setText(description.toString());
-        try {
-            imageView.setImageBitmap(recipe.getImage());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        recipe.getImageAsync(imageView::setImageBitmap);
     }
 
     @Override

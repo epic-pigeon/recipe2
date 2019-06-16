@@ -48,7 +48,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public final class DBHandler {
     private DBHandler() {}
@@ -292,5 +294,21 @@ public final class DBHandler {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static<T> void executeAsync(Supplier<T> supplier, Consumer<T> consumer) {
+        new AsyncTask<Void, Void, T>() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            protected T doInBackground(Void... voids) {
+                return supplier.get();
+            }
+
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            protected void onPostExecute(T t) {
+                consumer.accept(t);
+            }
+        }.execute();
     }
 }
