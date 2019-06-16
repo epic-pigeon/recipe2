@@ -417,7 +417,7 @@ public class ProfileActivity extends AppCompatActivity implements LoaderCallback
                 if (mEmail != null) {
                     DBHandler.changeUserUsername(GeneralData.user.getId(), mEmail);
                 } else if (mPassword != null) {
-                    DBHandler.changeUserUsername(GeneralData.user.getId(), mPassword);
+                    DBHandler.changeUserPassword(GeneralData.user.getId(), mPassword);
                 }
                 DBHandler.updateData();
                 GeneralData.user = DBHandler.getData().getUsers().findFirst(user -> user.getId() == GeneralData.user.getId());
