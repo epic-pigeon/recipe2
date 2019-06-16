@@ -224,7 +224,25 @@ public final class DBHandler {
         updateDataIfNotNull();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static void changeUserUsername(int userID, String username) throws IOException {
+        executePostQuery(
+                "changeUser",
+                new Collection<>("id", "username"),
+                new Collection<>(String.valueOf(userID), username)
+        );
+        updateDataIfNotNull();
+    }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static void changeUserPassword(int userID, String password) throws IOException {
+        executePostQuery(
+                "changeUser",
+                new Collection<>("id", "password"),
+                new Collection<>(String.valueOf(userID), password)
+        );
+        updateDataIfNotNull();
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public static void addSave(int userID, int recipeID) throws IOException {

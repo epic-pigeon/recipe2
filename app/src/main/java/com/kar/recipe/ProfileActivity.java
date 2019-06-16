@@ -3,10 +3,12 @@ package com.kar.recipe;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
@@ -28,6 +30,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
+import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -76,6 +79,7 @@ public class ProfileActivity extends AppCompatActivity implements LoaderCallback
     private EditText mPasswordResetView;
     private View mProgressView;
     private View mLoginFormView;
+    private ImageView avatar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,7 +143,7 @@ public class ProfileActivity extends AppCompatActivity implements LoaderCallback
             }
         });
 
-        ImageView avatar = (ImageView) findViewById(R.id.imageView_avatar_profile);
+        avatar = (ImageView) findViewById(R.id.imageView_avatar_profile);
         mEmailView.setText(GeneralData.user.getName());
         try {
             avatar.setImageBitmap(GeneralData.user.getAvatarImage());
@@ -222,7 +226,7 @@ public class ProfileActivity extends AppCompatActivity implements LoaderCallback
 
             //TODO:DELETE
             showProgress(true);
-            mAuthTask = new UserLoginTask(login, "");
+            mAuthTask = new UserLoginTask(login, null);
             mAuthTask.execute((Void) null);
         }
     }
@@ -241,57 +245,32 @@ public class ProfileActivity extends AppCompatActivity implements LoaderCallback
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == 123 && resultCode == RESULT_OK) {
             Uri selectedfile = data.getData(); //The uri with the location of the file
-            try {
-                Log.d("hello" , selectedfile.getPath().split(".")[selectedfile.getPath().split(".").length - 1]);
-                DBHandler.changeUserAvatar(GeneralData.user.getId(), GeneralData.user.getAvatarImage(), "jpg");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+            new AsyncTask<Void, Void, Bitmap>() {
+                @Override
+                protected Bitmap doInBackground(Void... voids) {
+                    try {
+                        ContentResolver cR = ProfileActivity.this.getContentResolver();
+                        MimeTypeMap mime = MimeTypeMap.getSingleton();
+                        String type = mime.getExtensionFromMimeType(cR.getType(selectedfile));
+                        Bitmap image = MediaStore.Images.Media.getBitmap(ProfileActivity.this.getContentResolver(), selectedfile);;
+                        DBHandler.changeUserAvatar(
+                                GeneralData.user.getId(),
+                                image,
+                                type
+                        );
+                        return image;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
 
-    public Bitmap loadBitmap(String url)
-    {
-        Bitmap bm = null;
-        InputStream is = null;
-        BufferedInputStream bis = null;
-        try
-        {
-            URLConnection conn = new URL(url).openConnection();
-            conn.connect();
-            is = conn.getInputStream();
-            bis = new BufferedInputStream(is, 8192);
-            bm = BitmapFactory.decodeStream(bis);
+                @Override
+                protected void onPostExecute(Bitmap bitmap) {
+                    avatar.setImageBitmap(bitmap);
+                }
+            }.execute();
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        finally {
-            if (bis != null)
-            {
-                try
-                {
-                    bis.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-            if (is != null)
-            {
-                try
-                {
-                    is.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return bm;
     }
 
     private void attemptChangePassword() {
@@ -324,7 +303,7 @@ public class ProfileActivity extends AppCompatActivity implements LoaderCallback
 
             //FIXME: DELETE
             showProgress(true);
-            mAuthTask = new UserLoginTask("anything", password);
+            mAuthTask = new UserLoginTask(null, password);
             mAuthTask.execute((Void) null);
         }
     }
@@ -342,32 +321,25 @@ public class ProfileActivity extends AppCompatActivity implements LoaderCallback
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
         // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+        int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
+        mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+        mLoginFormView.animate().setDuration(shortAnimTime).alpha(
+                show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            }
+        });
 
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
+        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        mProgressView.animate().setDuration(shortAnimTime).alpha(
+                show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            }
+        });
     }
 
     @Override
@@ -428,7 +400,7 @@ public class ProfileActivity extends AppCompatActivity implements LoaderCallback
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Throwable> {
 
         private final String mEmail;
         private final String mPassword;
@@ -438,35 +410,29 @@ public class ProfileActivity extends AppCompatActivity implements LoaderCallback
             mPassword = password;
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
+        protected Throwable doInBackground(Void... params) {
             try {
-                // Simulate network access.
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
+                if (mEmail != null) {
+                    DBHandler.changeUserUsername(GeneralData.user.getId(), mEmail);
+                } else if (mPassword != null) {
+                    DBHandler.changeUserUsername(GeneralData.user.getId(), mPassword);
                 }
+                DBHandler.updateData();
+                GeneralData.user = DBHandler.getData().getUsers().findFirst(user -> user.getId() == GeneralData.user.getId());
+                return null;
+            } catch (Exception e) {
+                return e;
             }
-
-            // TODO: register the new account here.
-            return true;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final Throwable success) {
             mAuthTask = null;
             showProgress(false);
 
-            if (success) {
+            if (success == null) {
                 finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
