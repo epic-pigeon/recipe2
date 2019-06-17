@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -30,6 +31,7 @@ import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
 
@@ -39,6 +41,9 @@ import com.kar.recipe.DataClasses.Data;
 import com.kar.recipe.DataClasses.Recipe;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.BitSet;
 import java.util.PrimitiveIterator;
 import java.util.concurrent.CountDownLatch;
@@ -61,7 +66,7 @@ public class MainActivity extends AppCompatActivity
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -179,7 +184,7 @@ public class MainActivity extends AppCompatActivity
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("only_saves", false);
                 startActivity(intent);
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG).show();
+            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
         } else if (id == R.id.nav_favorite_recipes) {
             //Иначе если нажаты любимые рецепты
             if (GeneralData.user != null) {
@@ -187,7 +192,7 @@ public class MainActivity extends AppCompatActivity
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("only_saves", true);
                 startActivity(intent);
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG).show();
+            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
             //Иначе уведомление
         } else if (id == R.id.nav_sign_in) {
             //Иначе если нажат вход в аккаунт
@@ -198,11 +203,11 @@ public class MainActivity extends AppCompatActivity
                 GeneralData.user = null;
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG).show();
+            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
         } else if (id == R.id.nav_profile){
             if (GeneralData.user != null) {
                 startActivity(new Intent(this, ProfileActivity.class));
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG).show();
+            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -283,9 +288,12 @@ public class MainActivity extends AppCompatActivity
         public View getView(int position, View convertView, ViewGroup parent) {
             convertView = getLayoutInflater().inflate(R.layout.dishlayout, null);
 
-            ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView);//фото рецепта
-            TextView textView = (TextView) convertView.findViewById(R.id.textView_name);//Название рецепта
-            ImageButton imageButton = (ImageButton) convertView.findViewById(R.id.imageButton_favorite);//Лайк
+            ImageView imageView = convertView.findViewById(R.id.imageView);//фото рецепта
+            TextView textView = convertView.findViewById(R.id.textView_name);//Название рецепта
+            ImageButton imageButton = convertView.findViewById(R.id.imageButton_favorite);//Лайк
+            ProgressBar progressBar = convertView.findViewById(R.id.progressBar);
+            imageView.setVisibility(View.GONE);
+            progressBar.setVisibility(View.VISIBLE);
 
             //Если мы вошли в аккаунт - расставим лайки блюдам
             if(GeneralData.user != null){
@@ -380,7 +388,7 @@ public class MainActivity extends AppCompatActivity
 
                         }
                     }else{
-                        Snackbar.make(view, "Вы не вошли в аккаунт!", Snackbar.LENGTH_LONG)
+                        Snackbar.make(view, R.string.login_required, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                     }
                 }
@@ -389,11 +397,11 @@ public class MainActivity extends AppCompatActivity
 
             //Присваиваем фото блюда и название
 
-            try {
-                imageView.setImageBitmap(current.get(position).getImage());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            current.get(position).getImageAsync(bitmap -> {
+                imageView.setImageBitmap(bitmap);
+                imageView.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.GONE);
+            });
 
             textView.setText(current.get(position).getName());
 
@@ -446,4 +454,5 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
+
 }
