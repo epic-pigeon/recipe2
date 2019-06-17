@@ -64,7 +64,7 @@ public final class DBHandler {
      * @return Execution result
      * @throws IOException If connection to server failed
      */
-    public static Object executePostQuery(String operation, Collection<String> argNames, Collection<String> argValues) throws IOException {
+    public static Object executePostQueryMain(String operation, Collection<String> argNames, Collection<String> argValues) throws IOException {
         String urlParameters = Constants.SERVER.buildURLParameters(
                 new Collection<>("operation").merge(argNames),
                 new Collection<>(operation).merge(argValues)
@@ -116,6 +116,32 @@ public final class DBHandler {
         } else {
             throw new IOException((String) parsed.get("error"));
         }
+    }
+
+    public static Object executePostQuery(String operation, Collection<String> argNames, Collection<String> argValues) throws IOException {
+        final Object[] result = new Object[] {null};
+        final IOException[] e = new IOException[]{null};
+        CountDownLatch latch = new CountDownLatch(1);
+        executeAsync(() -> {
+            try {
+                return executePostQueryMain(operation, argNames, argValues);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+                e[0] = e1;
+                return null;
+            }
+        }, o -> {
+            result[0] = o;
+            latch.countDown();
+        });
+        try {
+            latch.await();
+        } catch (InterruptedException e1) {
+            e1.printStackTrace();
+        }
+        if (e[0] != null) throw e[0];
+        return result[0];
+        //return executePostQueryMain(operation, argNames, argValues);
     }
 
     private static Data data;
@@ -297,7 +323,7 @@ public final class DBHandler {
     }
 
     public static<T> void executeAsync(Supplier<T> supplier, Consumer<T> consumer) {
-        new AsyncTask<Void, Void, T>() {
+        /*new AsyncTask<Void, Void, T>() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             protected T doInBackground(Void... voids) {
@@ -309,6 +335,13 @@ public final class DBHandler {
             protected void onPostExecute(T t) {
                 consumer.accept(t);
             }
-        }.execute();
+        }.execute();*/
+        new Thread() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void run() {
+                consumer.accept(supplier.get());
+            }
+        }.start();
     }
 }

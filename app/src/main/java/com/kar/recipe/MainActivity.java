@@ -10,11 +10,17 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.text.Layout;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -55,8 +61,9 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener , SearchView.OnQueryTextListener {
 
     private static Collection<Recipe> recipes;
-    private ListView listView;
-    private DishAdapter dishAdapter;
+    //private ListView listView;
+    private RecyclerView recyclerView;
+    //private DishAdapter dishAdapter;
     private SearchView mSearchView;
     private boolean onlySaves = false;
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -90,10 +97,13 @@ public class MainActivity extends AppCompatActivity
             recipes = recipes.find(recipe -> GeneralData.user.getSaves().findFirst(recipe1 -> recipe.getId() == recipe1.getId()) != null);
         }
 
-        listView = (ListView) findViewById(R.id.listView);
+        /*listView = (ListView) findViewById(R.id.listView);
         listView.setTextFilterEnabled(true);
         dishAdapter = new DishAdapter(recipes);
-        listView.setAdapter(dishAdapter);
+        listView.setAdapter(dishAdapter);*/
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setAdapter(new RecyclerViewAdapter(recipes, onlySaves));
+        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
 
         mSearchView = (SearchView) findViewById(R.id.searchView_dish);
         mSearchView.setIconifiedByDefault(false);
@@ -119,15 +129,15 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        dishAdapter.notifyDataSetChanged();
+        //dishAdapter.notifyDataSetChanged();
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
         if (TextUtils.isEmpty(newText)) {
-            listView.clearTextFilter();
+            //listView.clearTextFilter();
         } else {
-            listView.setFilterText(newText);
+            //listView.setFilterText(newText);
         }
         return true;
     }
@@ -455,4 +465,148 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
+    private static class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
+        private Collection<Recipe> recipes;
+        private boolean onlySaves;
+
+        public RecyclerViewAdapter(Collection<Recipe> recipes, boolean onlySaves) {
+            this.recipes = recipes;
+            this.onlySaves = onlySaves;
+        }
+
+        @Override
+        public int getItemCount() {
+            return recipes.size();
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+            CardView cardView = (CardView) LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.recipe_card_layout, viewGroup, false);
+            return new ViewHolder(cardView);
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
+            CardView cardView = viewHolder.cardView;
+            ImageView imageView = cardView.findViewById(R.id.info_image);
+            TextView textView = cardView.findViewById(R.id.info_text);
+            TextView likes = cardView.findViewById(R.id.likes_view);
+            ImageButton imageButton = cardView.findViewById(R.id.like_button);
+            ProgressBar progressBar = cardView.findViewById(R.id.progress_bar);
+
+
+            imageView.setVisibility(View.GONE);
+            progressBar.setVisibility(View.VISIBLE);
+            recipes.get(position).getImageAsync(bitmap -> {
+                imageView.setImageBitmap(bitmap);
+                imageView.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.GONE);
+            });
+
+            textView.setText(recipes.get(position).getName());
+
+            try {
+                likes.setText(String.valueOf(DBHandler.getData().getUserSaves().find(connection -> connection.getID(1) == recipes.get(position).getId()).size()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if(GeneralData.user != null){
+                if (GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == recipes.get(position).getId()) != null){
+                    imageButton.setImageResource(R.drawable.like);
+                    imageButton.setSelected(true);
+                }else{
+
+                    imageButton.setImageResource(R.drawable.not_like);
+                    imageButton.setSelected(false);
+                }
+            }else{
+                imageButton.setImageResource(R.drawable.not_like);
+                imageButton.setSelected(false);
+            }
+
+            //Если мы нажали лайк
+            imageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (GeneralData.user != null) {
+                        imageButton.setSelected(!imageButton.isSelected());
+                        if (imageButton.isSelected()) {
+                            imageButton.setImageResource(R.drawable.like);
+                            Snackbar.make(view, "Добавлено к помеченным", Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show();
+                            new AsyncTask<Void, Void, Data>() {
+                                @RequiresApi(api = Build.VERSION_CODES.N)
+                                @Override
+                                protected Data doInBackground(Void... voids) {
+                                    try {
+                                        DBHandler.addSave(GeneralData.user.getId(), recipes.get(position).getId());
+                                        DBHandler.updateData();
+                                        return DBHandler.getData();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                        return null;
+                                    }
+                                }
+
+                                @Override
+                                protected void onPostExecute(Data data) {
+                                    recipes = data.getRecipes();
+                                    GeneralData.user = data.getUsers().findFirst(user -> user.getId() == GeneralData.user.getId());
+                                    if (onlySaves) {
+                                        recipes = recipes.find(recipe -> GeneralData.user.getSaves().findFirst(recipe1 -> recipe.getId() == recipe1.getId()) != null);
+                                    }
+                                    notifyDataSetChanged();
+                                }
+                            }.execute();
+                        } else {
+                            imageButton.setImageResource(R.drawable.not_like);
+                            Snackbar.make(view, "Удалено из помеченных", Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show();
+                            new AsyncTask<Void, Void, Data>() {
+                                @RequiresApi(api = Build.VERSION_CODES.N)
+                                @Override
+                                protected Data doInBackground(Void... voids) {
+                                    try {
+                                        DBHandler.removeSave(GeneralData.user.getId(), recipes.get(position).getId());
+                                        DBHandler.updateData();
+                                        return DBHandler.getData();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                        return null;
+                                    }
+                                }
+
+                                @Override
+                                protected void onPostExecute(Data data) {
+                                    recipes = data.getRecipes();
+                                    GeneralData.user = data.getUsers().findFirst(user -> user.getId() == GeneralData.user.getId());
+                                    if (onlySaves) {
+                                        recipes = recipes.find(recipe -> GeneralData.user.getSaves().findFirst(recipe1 -> recipe.getId() == recipe1.getId()) != null);
+                                    }
+                                    notifyDataSetChanged();
+                                }
+                            }.execute();
+
+                        }
+                    }else{
+                        Snackbar.make(view, R.string.login_required, Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+                    }
+                }
+            });
+        }
+
+        private static class ViewHolder extends RecyclerView.ViewHolder {
+            private CardView cardView;
+
+            public ViewHolder(CardView cardView) {
+                super(cardView);
+                this.cardView = cardView;
+            }
+        }
+    }
 }
