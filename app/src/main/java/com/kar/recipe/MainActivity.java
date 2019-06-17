@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity
     //private DishAdapter dishAdapter;
     private SearchView mSearchView;
     private boolean onlySaves = false;
+    private NavigationView navigationView;
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,8 +119,9 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        navigationView.getMenu().getItem(0).setChecked(true);
     }
 
     @Override
@@ -197,7 +199,7 @@ public class MainActivity extends AppCompatActivity
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("only_saves", false);
                 startActivity(intent);
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            }// else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
         } else if (id == R.id.nav_favorite_recipes) {
             //Иначе если нажаты любимые рецепты
             if (GeneralData.user != null) {
@@ -205,7 +207,9 @@ public class MainActivity extends AppCompatActivity
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("only_saves", true);
                 startActivity(intent);
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            } else {
+                Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            }
             //Иначе уведомление
         } else if (id == R.id.nav_sign_in) {
             //Иначе если нажат вход в аккаунт
@@ -216,11 +220,15 @@ public class MainActivity extends AppCompatActivity
                 GeneralData.user = null;
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            } else {
+                Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            }
         } else if (id == R.id.nav_profile){
             if (GeneralData.user != null) {
                 startActivity(new Intent(this, ProfileActivity.class));
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            } else {
+                Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            }
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
