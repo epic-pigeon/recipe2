@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity
         dishAdapter = new DishAdapter(recipes);
         listView.setAdapter(dishAdapter);*/
         recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setAdapter(new RecyclerViewAdapter(recipes, onlySaves));
+        recyclerView.setAdapter(new RecyclerViewAdapter(recipes, onlySaves, this));
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
 
         mSearchView = (SearchView) findViewById(R.id.searchView_dish);
@@ -469,10 +469,12 @@ public class MainActivity extends AppCompatActivity
     private static class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
         private Collection<Recipe> recipes;
         private boolean onlySaves;
+        private MainActivity mainActivity;
 
-        public RecyclerViewAdapter(Collection<Recipe> recipes, boolean onlySaves) {
+        public RecyclerViewAdapter(Collection<Recipe> recipes, boolean onlySaves, MainActivity mainActivity) {
             this.recipes = recipes;
             this.onlySaves = onlySaves;
+            this.mainActivity = mainActivity;
         }
 
         @Override
@@ -497,6 +499,14 @@ public class MainActivity extends AppCompatActivity
             ImageButton imageButton = cardView.findViewById(R.id.like_button);
             ProgressBar progressBar = cardView.findViewById(R.id.progress_bar);
 
+            cardView.setOnClickListener(v -> {
+                Recipe recipe = recipes.get(position);
+                Intent intent = new Intent(mainActivity, DetailsActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("recipe", recipe);
+                intent.putExtra("recipe_bundle", bundle);
+                mainActivity.startActivity(intent);
+            });
 
             imageView.setVisibility(View.GONE);
             progressBar.setVisibility(View.VISIBLE);
