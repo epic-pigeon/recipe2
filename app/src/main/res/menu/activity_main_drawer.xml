@@ -13,6 +13,10 @@
             android:icon="@android:drawable/btn_star_big_on"
             android:title="Любимые Рецепты" />
         <item
+            android:id="@+id/nav_add_recipe"
+            android:icon="@android:drawable/ic_input_add"
+            android:title="Добавить Рецепт" />
+        <item
             android:id="@+id/nav_profile"
             android:icon="@android:drawable/ic_dialog_info"
             android:title="Профиль" />

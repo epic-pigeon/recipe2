@@ -229,6 +229,12 @@ public class MainActivity extends AppCompatActivity
             } else {
                 Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
             }
+        } else if (id == R.id.nav_add_recipe){
+            if (GeneralData.user != null) {
+                startActivity(new Intent(this, AddRecipeActivity.class));
+            } else {
+                Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            }
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
