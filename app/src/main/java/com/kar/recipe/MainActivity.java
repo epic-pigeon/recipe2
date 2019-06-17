@@ -33,6 +33,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity
     //private DishAdapter dishAdapter;
     private SearchView mSearchView;
     private boolean onlySaves = false;
+    private NavigationView navigationView;
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,8 +119,9 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        navigationView.getMenu().getItem(0).setChecked(true);
     }
 
     @Override
@@ -136,8 +139,10 @@ public class MainActivity extends AppCompatActivity
     public boolean onQueryTextChange(String newText) {
         if (TextUtils.isEmpty(newText)) {
             //listView.clearTextFilter();
+            ((RecyclerViewAdapter) recyclerView.getAdapter()).getFilter().filter("");
         } else {
             //listView.setFilterText(newText);
+            ((RecyclerViewAdapter) recyclerView.getAdapter()).getFilter().filter(newText);
         }
         return true;
     }
@@ -194,7 +199,7 @@ public class MainActivity extends AppCompatActivity
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("only_saves", false);
                 startActivity(intent);
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            }// else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
         } else if (id == R.id.nav_favorite_recipes) {
             //Иначе если нажаты любимые рецепты
             if (GeneralData.user != null) {
@@ -202,7 +207,9 @@ public class MainActivity extends AppCompatActivity
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("only_saves", true);
                 startActivity(intent);
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            } else {
+                Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            }
             //Иначе уведомление
         } else if (id == R.id.nav_sign_in) {
             //Иначе если нажат вход в аккаунт
@@ -213,11 +220,15 @@ public class MainActivity extends AppCompatActivity
                 GeneralData.user = null;
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            } else {
+                Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            }
         } else if (id == R.id.nav_profile){
             if (GeneralData.user != null) {
                 startActivity(new Intent(this, ProfileActivity.class));
-            } else Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            } else {
+                Snackbar.make(getWindow().getDecorView().getRootView(), R.string.login_required, Snackbar.LENGTH_LONG).show();
+            }
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -466,20 +477,22 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private static class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
+    private static class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> implements Filterable {
         private Collection<Recipe> recipes;
+        private Collection<Recipe> current;
         private boolean onlySaves;
         private MainActivity mainActivity;
 
         public RecyclerViewAdapter(Collection<Recipe> recipes, boolean onlySaves, MainActivity mainActivity) {
             this.recipes = recipes;
+            this.current = recipes;
             this.onlySaves = onlySaves;
             this.mainActivity = mainActivity;
         }
 
         @Override
         public int getItemCount() {
-            return recipes.size();
+            return current.size();
         }
 
         @NonNull
@@ -500,7 +513,7 @@ public class MainActivity extends AppCompatActivity
             ProgressBar progressBar = cardView.findViewById(R.id.progress_bar);
 
             cardView.setOnClickListener(v -> {
-                Recipe recipe = recipes.get(position);
+                Recipe recipe = current.get(position);
                 Intent intent = new Intent(mainActivity, DetailsActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("recipe", recipe);
@@ -510,22 +523,22 @@ public class MainActivity extends AppCompatActivity
 
             imageView.setVisibility(View.GONE);
             progressBar.setVisibility(View.VISIBLE);
-            recipes.get(position).getImageAsync(bitmap -> {
+            current.get(position).getImageAsync(bitmap -> {
                 imageView.setImageBitmap(bitmap);
                 imageView.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.GONE);
             });
 
-            textView.setText(recipes.get(position).getName());
+            textView.setText(current.get(position).getName());
 
             try {
-                likes.setText(String.valueOf(DBHandler.getData().getUserSaves().find(connection -> connection.getID(1) == recipes.get(position).getId()).size()));
+                likes.setText(String.valueOf(DBHandler.getData().getUserSaves().find(connection -> connection.getID(1) == current.get(position).getId()).size()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
             if(GeneralData.user != null){
-                if (GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == recipes.get(position).getId()) != null){
+                if (GeneralData.user.getSaves().findFirst(recipe -> recipe.getId() == current.get(position).getId()) != null){
                     imageButton.setImageResource(R.drawable.like);
                     imageButton.setSelected(true);
                 }else{
@@ -553,7 +566,7 @@ public class MainActivity extends AppCompatActivity
                                 @Override
                                 protected Data doInBackground(Void... voids) {
                                     try {
-                                        DBHandler.addSave(GeneralData.user.getId(), recipes.get(position).getId());
+                                        DBHandler.addSave(GeneralData.user.getId(), current.get(position).getId());
                                         DBHandler.updateData();
                                         return DBHandler.getData();
                                     } catch (IOException e) {
@@ -567,8 +580,8 @@ public class MainActivity extends AppCompatActivity
                                     recipes = data.getRecipes();
                                     GeneralData.user = data.getUsers().findFirst(user -> user.getId() == GeneralData.user.getId());
                                     if (onlySaves) {
-                                        recipes = recipes.find(recipe -> GeneralData.user.getSaves().findFirst(recipe1 -> recipe.getId() == recipe1.getId()) != null);
-                                    }
+                                        current = recipes.find(recipe -> GeneralData.user.getSaves().findFirst(recipe1 -> recipe.getId() == recipe1.getId()) != null);
+                                    } else current = recipes;
                                     notifyDataSetChanged();
                                 }
                             }.execute();
@@ -581,7 +594,7 @@ public class MainActivity extends AppCompatActivity
                                 @Override
                                 protected Data doInBackground(Void... voids) {
                                     try {
-                                        DBHandler.removeSave(GeneralData.user.getId(), recipes.get(position).getId());
+                                        DBHandler.removeSave(GeneralData.user.getId(), current.get(position).getId());
                                         DBHandler.updateData();
                                         return DBHandler.getData();
                                     } catch (IOException e) {
@@ -595,8 +608,8 @@ public class MainActivity extends AppCompatActivity
                                     recipes = data.getRecipes();
                                     GeneralData.user = data.getUsers().findFirst(user -> user.getId() == GeneralData.user.getId());
                                     if (onlySaves) {
-                                        recipes = recipes.find(recipe -> GeneralData.user.getSaves().findFirst(recipe1 -> recipe.getId() == recipe1.getId()) != null);
-                                    }
+                                        current = recipes.find(recipe -> GeneralData.user.getSaves().findFirst(recipe1 -> recipe.getId() == recipe1.getId()) != null);
+                                    } else current = recipes;
                                     notifyDataSetChanged();
                                 }
                             }.execute();
@@ -608,6 +621,52 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
             });
+        }
+
+        @Override
+        public Filter getFilter() {
+            return new android.widget.Filter() {
+                @RequiresApi(api = Build.VERSION_CODES.N)
+                @Override
+                protected FilterResults performFiltering(CharSequence constraint) {
+                    if (constraint != null) {
+                        FilterResults filterResults = new FilterResults();
+                        Collection<Recipe> recipesNew = new Collection<>();
+                        //Разделяем все, что ввели в поиск по пробелам и присваиваем в массив
+                        String[] ingredients = constraint.toString().toLowerCase().split(" ");
+                        //Проходим по всем рецептам
+                        for (Recipe i : recipes) {
+                            boolean fl = true;//Подходит ли нам рецепт
+
+                            //Проходим по всему массиву, который ввели в поиск
+                            for (String j : ingredients) {
+                                //Если в рецепте такого ингредиента нет и это не название блюда - выходим из цикла и говорим, что блюдо не подходит
+                                if (i.getIngredients().findFirst(recipeIngredient -> recipeIngredient.getIngredient().getName().toLowerCase().contains(j)) == null &&
+                                        !i.getName().toLowerCase().contains(j)) {
+                                    fl = false;
+                                    break;
+                                }
+                            }
+                            //Если блюдо подходит и мы его еще не присваивали в результат
+                            if (fl && recipesNew.indexOf(i) == -1 &&
+                                    (!onlySaves || GeneralData.user.getSaves().findFirst(save -> save.getId() == i.getId()) != null)) {
+                                recipesNew.add(i);
+                            }
+                        }
+                        filterResults.count = recipesNew.size();
+                        filterResults.values = recipesNew;
+                        return filterResults;
+                    } else return null;
+                }
+
+                @Override
+                protected void publishResults(CharSequence constraint, FilterResults results) {
+                    if (results != null) {
+                        current = (Collection<Recipe>) results.values;
+                        notifyDataSetChanged();
+                    }
+                }
+            };
         }
 
         private static class ViewHolder extends RecyclerView.ViewHolder {
