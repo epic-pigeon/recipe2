@@ -68,35 +68,45 @@
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
-            <android.support.v4.widget.NestedScrollView
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="383dp"
-                android:fillViewport="true">
+                android:layout_height="640dp"
+                android:orientation="vertical">
 
-                <LinearLayout
+                <ListView
+                    android:id="@+id/listView_ingredients"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_height="match_parent" />
 
-                    <ListView
-                        android:id="@+id/listView_ingredients"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
-
-                </LinearLayout>
-            </android.support.v4.widget.NestedScrollView>
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/button_add_ingredient"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
                     android:background="@android:color/holo_green_light"
                     android:text="Add ingredient" />
+
+                <Space
+                    android:layout_width="252dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/button_delete_ingredient"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="10dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/holo_green_light"
+                    android:text="Delete ingredient" />
             </LinearLayout>
 
             <View
@@ -114,11 +124,13 @@
             <EditText
                 android:id="@+id/recipe_des_editText"
                 android:layout_width="match_parent"
-                android:layout_height="77dp"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:ems="10"
+                android:gravity="top"
                 android:hint="Описание"
                 android:inputType="textMultiLine"
+                android:lines="10"
                 android:singleLine="false"
                 app:layout_constraintBottom_toTopOf="@+id/button_add_recipe"
                 app:layout_constraintStart_toStartOf="parent" />
