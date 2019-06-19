@@ -22,6 +22,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -48,6 +49,9 @@ public class AddRecipeActivity extends AppCompatActivity {
     private Collection<String> UNITS;
     private int countOfIngredients = 1;
     private Collection<String> ingred;
+    private LinearLayout linearLayoutIngredients;
+    private ArrayList<IngerdientsUI> ingerdientsUI;
+    private int delta = 3;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -60,6 +64,8 @@ public class AddRecipeActivity extends AppCompatActivity {
             Set<String> set = new HashSet<>(DBHandler.getData().getIngredients().map(Ingredient::getUnits));
             UNITS.addAll(set);
              */
+            ingerdientsUI = new ArrayList<IngerdientsUI>();
+
             UNITS = DBHandler.getData().getIngredients().map(Ingredient::getUnits);
             Set<String> set = new HashSet<>(UNITS);
             UNITS.clear();
@@ -74,6 +80,7 @@ public class AddRecipeActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        linearLayoutIngredients = (LinearLayout) findViewById(R.id.linearlayout_ingredients);
         recipe_avatar = (ImageView) findViewById(R.id.recipe_photo_add);
         recipe_name = (EditText) findViewById(R.id.recipe_name_editText);
         recipe_description = (EditText) findViewById(R.id.recipe_des_editText);
@@ -101,9 +108,16 @@ public class AddRecipeActivity extends AppCompatActivity {
         add_ingredient_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                countOfIngredients++;
-                custom_adapter.notifyDataSetChanged();
+                //300 - отсоси у тракориста
+                if (countOfIngredients < 300) {
+                    saveListView(0);
+                    linearLayoutIngredients.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            (linearLayoutIngredients.getHeight() / countOfIngredients) * (countOfIngredients + 1) + delta));//3 - delta
+                    countOfIngredients++;
+                    custom_adapter.notifyDataSetChanged();
+                    //FIXME: убрать и подобрать delta чтобы почти не менялось
+                    Log.d("hello" , String.valueOf(linearLayoutIngredients.getHeight() / countOfIngredients));
+                }
             }
         });
 
@@ -111,12 +125,59 @@ public class AddRecipeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (countOfIngredients > 1) {
+                    saveListView(-1);
+                    linearLayoutIngredients.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            (linearLayoutIngredients.getHeight() / countOfIngredients) * (countOfIngredients - 1)));
                     countOfIngredients--;
                     custom_adapter.notifyDataSetChanged();
                 }
             }
         });
 
+    }
+
+    private void saveListView(int a){
+       /* if (a == -1){
+            ingerdientsUI.remove(ingerdientsUI.size() - 1);
+        }else{
+            View view;
+            AutoCompleteTextView autoCompleteTextView;
+            EditText editText;
+            Spinner unit_spinner;
+            while (ingerdientsUI.size() < ingredients.getCount()) {
+                view = ingredients.getChildAt(ingerdientsUI.size());
+                autoCompleteTextView = view.findViewById(R.id.autoCompleteTextView2);
+                editText = view.findViewById(R.id.ing_count);
+                unit_spinner = view.findViewById(R.id.unit_spinner);
+                try {
+                    ingerdientsUI.add(new IngerdientsUI(String.valueOf(autoCompleteTextView.getText()),
+                            Integer.valueOf(String.valueOf(editText.getText())),
+                            unit_spinner.getSelectedItemId()));
+                }catch (NumberFormatException e){
+                    ingerdientsUI.add(new IngerdientsUI(String.valueOf(autoCompleteTextView.getText()),
+                            0,
+                            unit_spinner.getSelectedItemId()));
+                    Log.d("hello" , "KAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR");
+                }
+            }
+        }*/
+        ingerdientsUI.clear();
+        for(int i = 0; i < ingredients.getCount() + a; i++) {
+                View view = ingredients.getChildAt(i);
+                AutoCompleteTextView autoCompleteTextView = view.findViewById(R.id.autoCompleteTextView2);
+                EditText editText = view.findViewById(R.id.ing_count);
+                Spinner unit_spinner = view.findViewById(R.id.unit_spinner);
+            try {
+                ingerdientsUI.add(new IngerdientsUI(String.valueOf(autoCompleteTextView.getText()),
+                        Integer.valueOf(String.valueOf(editText.getText())),
+                        unit_spinner.getSelectedItemPosition()));
+            }catch (NumberFormatException e){
+                ingerdientsUI.add(new IngerdientsUI(String.valueOf(autoCompleteTextView.getText()),
+                        123456,
+                        unit_spinner.getSelectedItemPosition()));
+                //Максимальное кол-во цифр 5, а значит если я добавлю больше 5 символов - значит я не вводил ничего
+            }
+        }
     }
 
     private void attemptAddRecipe(){
@@ -193,6 +254,7 @@ public class AddRecipeActivity extends AppCompatActivity {
             convertView = getLayoutInflater().inflate(R.layout.ingedient_item , null);
 
             EditText ingredient_count = (EditText) convertView.findViewById(R.id.ing_count);
+
             AutoCompleteTextView autoCompleteTextView = (AutoCompleteTextView) convertView.findViewById(R.id.autoCompleteTextView2);
             ArrayAdapter<String> auto_adapter = new ArrayAdapter<String>(AddRecipeActivity.this , android.R.layout.simple_list_item_1, ingred);
             autoCompleteTextView.setAdapter(auto_adapter);
@@ -211,7 +273,19 @@ public class AddRecipeActivity extends AppCompatActivity {
             unit_spinner.setPrompt("Ingredient");
             // выделяем элемент
             unit_adapter.notifyDataSetChanged();//можно убрать
-            unit_spinner.setSelection(0);
+
+            if (position < ingerdientsUI.size()){
+                unit_spinner.setSelection(ingerdientsUI.get(position).getIdOfUnit());
+                autoCompleteTextView.setText(ingerdientsUI.get(position).getName());
+                if (String.valueOf(ingerdientsUI.get(position).getCount()).length() < 6){
+                    ingredient_count.setText(String.valueOf(ingerdientsUI.get(position).getCount()));
+                }else{
+                    ingredient_count.setHint("0");
+                }
+            }else{
+                unit_spinner.setSelection(0);
+            }
+
             // устанавливаем обработчик нажатия
             unit_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
