@@ -14,7 +14,7 @@
             android:title="Любимые Рецепты" />
         <item
             android:id="@+id/nav_add_recipe"
-            android:icon="@android:drawable/ic_input_add"
+            android:icon="@drawable/plus"
             android:title="Добавить Рецепт" />
         <item
             android:id="@+id/nav_profile"
@@ -26,7 +26,7 @@
             android:title="Войти" />
         <item
             android:id="@+id/nav_exit"
-            android:icon="@android:drawable/ic_lock_lock"
+            android:icon="@drawable/logout"
             android:title="Выйти" />
     </group>
 

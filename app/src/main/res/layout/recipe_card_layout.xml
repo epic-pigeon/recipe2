@@ -53,14 +53,15 @@
             <RelativeLayout
                 android:layout_width="30dp"
                 android:layout_height="30dp">
+
                 <ImageButton
                     android:id="@+id/like_button"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
                     android:layout_marginEnd="5dp"
                     android:background="@android:color/transparent"
                     android:scaleType="centerCrop"
-                    app:srcCompat="@drawable/like"
-                    android:layout_height="match_parent"
-                    android:layout_width="match_parent"/>
+                    app:srcCompat="@drawable/like" />
             </RelativeLayout>
         </LinearLayout>
     </LinearLayout>
