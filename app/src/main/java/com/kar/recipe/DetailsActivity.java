@@ -29,7 +29,7 @@ public class DetailsActivity extends Activity {
         textView.setMovementMethod(new ScrollingMovementMethod());
         StringBuilder description = new StringBuilder();
         for (RecipeIngredient recipeIngredient: recipe.getIngredients()) {
-            description.append("    ").append(recipeIngredient.getIngredient().getName()).append("(").append(recipeIngredient.getAmount()).append(" ").append(recipeIngredient.getIngredient().getUnits()).append(")\n");
+            description.append("    ").append(recipeIngredient.getIngredient().getName()).append("(").append(recipeIngredient.getAmount()).append(" ").append(recipeIngredient.getUnit().getName()).append(")\n");
         }
         description.append(recipe.getCooking());
         textView.setText(description.toString());

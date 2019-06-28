@@ -31,6 +31,7 @@ import android.widget.Toast;
 import com.kar.recipe.DBHandle.Collection;
 import com.kar.recipe.DBHandle.DBHandler;
 import com.kar.recipe.DataClasses.Ingredient;
+import com.kar.recipe.DataClasses.Unit;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class AddRecipeActivity extends AppCompatActivity {
     private Button add_ingredient_button;
     private Button delete_ingredient_button;
     private ListView ingredients;
-    private Collection<String> UNITS;
+    private Collection<Unit> UNITS;
     private int countOfIngredients = 1;
     private Collection<String> ingred;
     private LinearLayout linearLayoutIngredients;
@@ -66,8 +67,8 @@ public class AddRecipeActivity extends AppCompatActivity {
              */
             ingerdientsUI = new ArrayList<IngerdientsUI>();
 
-            UNITS = DBHandler.getData().getIngredients().map(Ingredient::getUnits);
-            Set<String> set = new HashSet<>(UNITS);
+            UNITS = DBHandler.getData().getUnits();
+            Set<Unit> set = new HashSet<>(UNITS);
             UNITS.clear();
             UNITS.addAll(set);
 
@@ -249,6 +250,7 @@ public class AddRecipeActivity extends AppCompatActivity {
         }
 
         //FIXME fix this shit
+        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             convertView = getLayoutInflater().inflate(R.layout.ingedient_item , null);
@@ -263,7 +265,7 @@ public class AddRecipeActivity extends AppCompatActivity {
 
             Spinner unit_spinner = (Spinner) convertView.findViewById(R.id.unit_spinner);
 
-            ArrayAdapter<String> unit_adapter = new ArrayAdapter<String>(AddRecipeActivity.this ,android.R.layout.simple_spinner_item, UNITS); //selected item will look like a spinner set from XML
+            ArrayAdapter<String> unit_adapter = new ArrayAdapter<String>(AddRecipeActivity.this ,android.R.layout.simple_spinner_item, UNITS.map(Unit::getName)); //selected item will look like a spinner set from XML
 
             unit_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 

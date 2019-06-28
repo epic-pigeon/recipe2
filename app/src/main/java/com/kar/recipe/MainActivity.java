@@ -92,7 +92,6 @@ public class MainActivity extends AppCompatActivity
         Intent intent = getIntent();
         if (intent != null) {
             onlySaves = intent.getBooleanExtra("only_saves", false);
-            Log.d("onlysaves", onlySaves ? "true" : "false");
         }
 
         if (onlySaves) {
@@ -675,7 +674,7 @@ public class MainActivity extends AppCompatActivity
             };
         }
 
-        private static class ViewHolder extends RecyclerView.ViewHolder {
+        public static class ViewHolder extends RecyclerView.ViewHolder {
             private CardView cardView;
 
             public ViewHolder(CardView cardView) {

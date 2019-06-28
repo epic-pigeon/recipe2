@@ -25,6 +25,7 @@ package com.kar.recipe.DBHandle;
  *    -----------------------------------------------------------------------------------
  */
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -36,6 +37,7 @@ import com.kar.recipe.DataClasses.Data;
 import com.kar.recipe.DataClasses.Ingredient;
 import com.kar.recipe.DataClasses.Recipe;
 import com.kar.recipe.DataClasses.RecipeIngredient;
+import com.kar.recipe.DataClasses.Unit;
 import com.kar.recipe.DataClasses.User;
 
 import org.json.simple.*;
@@ -190,8 +192,7 @@ public final class DBHandler {
 
         Collection<Ingredient> ingredients = queueTableFromDump(Constants.INGREDIENTS.TABLE_NAME, result -> new Ingredient(
                 Integer.valueOf((String) result.get(Constants.INGREDIENTS.ID)),
-                (String) result.get(Constants.INGREDIENTS.NAME),
-                (String) result.get(Constants.INGREDIENTS.UNITS)
+                (String) result.get(Constants.INGREDIENTS.NAME)
         ));
 
         Collection<Connection> userSaves = queueTableFromDump(Constants.SAVES.TABLE_NAME, result -> new Connection(
@@ -203,7 +204,13 @@ public final class DBHandler {
                 Integer.valueOf((String) result.get(Constants.RECIPE_INGREDIENTS.ID)),
                 Integer.valueOf((String) result.get(Constants.RECIPE_INGREDIENTS.RECIPE_ID)),
                 Integer.valueOf((String) result.get(Constants.RECIPE_INGREDIENTS.INGREDIENT_ID)),
+                Integer.valueOf((String) result.get(Constants.RECIPE_INGREDIENTS.UNIT_ID)),
                 Double.valueOf((String) result.get(Constants.RECIPE_INGREDIENTS.AMOUNT))
+        ));
+
+        Collection<Unit> units = queueTableFromDump(Constants.UNITS.TABLE_NAME, result -> new Unit(
+                Integer.valueOf(String.class.cast(result.get(Constants.UNITS.ID))),
+                String.class.cast(result.get(Constants.UNITS.NAME))
         ));
 
         return new Data(
@@ -211,7 +218,8 @@ public final class DBHandler {
                 recipes,
                 ingredients,
                 userSaves,
-                recipeIngredients
+                recipeIngredients,
+                units
         );
     }
 

@@ -11,7 +11,12 @@ public class Constants {
         public static final String TABLE_NAME = "ingredients";
         public static final String ID = "ingredient_id";
         public static final String NAME = "name";
-        public static final String UNITS = "units";
+    }
+
+    public static final class UNITS {
+        public static final String TABLE_NAME = "units";
+        public static final String ID = "unit_id";
+        public static final String NAME = "unit";
     }
 
     public static final class RECIPES {
@@ -27,6 +32,7 @@ public class Constants {
         public static final String ID = "id";
         public static final String RECIPE_ID = "recipe_id";
         public static final String INGREDIENT_ID = "ingredient_id";
+        public static final String UNIT_ID = "unit_id";
         public static final String AMOUNT = "amount";
     }
 

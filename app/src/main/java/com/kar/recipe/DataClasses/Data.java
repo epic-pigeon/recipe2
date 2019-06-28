@@ -11,14 +11,16 @@ public class Data extends DataClass {
     private Collection<Ingredient> ingredients;
     private Collection<Connection> userSaves;
     private Collection<RecipeIngredient> recipeIngredients;
+    private Collection<Unit> units;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public Data(Collection<User> users, Collection<Recipe> recipes, Collection<Ingredient> ingredients, Collection<Connection> userSaves, Collection<RecipeIngredient> recipeIngredients) {
+    public Data(Collection<User> users, Collection<Recipe> recipes, Collection<Ingredient> ingredients, Collection<Connection> userSaves, Collection<RecipeIngredient> recipeIngredients, Collection<Unit> units) {
         this.users = users;
         this.recipes = recipes;
         this.ingredients = ingredients;
         this.userSaves = userSaves;
         this.recipeIngredients = recipeIngredients;
+        this.units = units;
         buildConnections();
     }
 
@@ -38,6 +40,7 @@ public class Data extends DataClass {
             for (RecipeIngredient recipeIngredient: recipeIngredients.find(connection -> connection.getRecipeID() == recipe.getId())) {
                 recipeIngredient.setRecipe(recipe);
                 recipeIngredient.setIngredient(this.ingredients.findFirst(ingredient -> ingredient.getId() == recipeIngredient.getIngredientID()));
+                recipeIngredient.setUnit(units.findFirst(unit -> unit.getId() == recipeIngredient.getUnitID()));
                 ingredients.add(
                         recipeIngredient
                 );
@@ -64,5 +67,9 @@ public class Data extends DataClass {
 
     public Collection<RecipeIngredient> getRecipeIngredients() {
         return recipeIngredients;
+    }
+
+    public Collection<Unit> getUnits() {
+        return units;
     }
 }
