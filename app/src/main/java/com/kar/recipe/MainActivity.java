@@ -71,24 +71,27 @@ public class MainActivity extends AppCompatActivity
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("hello" , "kar1");
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Log.d("hello" , "kar2");
+
 
         CountDownLatch latch = new CountDownLatch(1);
 
         GetRecipesTask task = new GetRecipesTask(latch);
         task.execute();
-
+        Log.d("hello" , "kar3");
         try {
             latch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
+        Log.d("hello" , "kar4");
         Intent intent = getIntent();
         if (intent != null) {
             onlySaves = intent.getBooleanExtra("only_saves", false);
@@ -97,7 +100,7 @@ public class MainActivity extends AppCompatActivity
         if (onlySaves) {
             recipes = recipes.find(recipe -> GeneralData.user.getSaves().findFirst(recipe1 -> recipe.getId() == recipe1.getId()) != null);
         }
-
+        Log.d("hello" , "kar5");
         /*listView = (ListView) findViewById(R.id.listView);
         listView.setTextFilterEnabled(true);
         dishAdapter = new DishAdapter(recipes);
@@ -106,11 +109,15 @@ public class MainActivity extends AppCompatActivity
         recyclerView.setAdapter(new RecyclerViewAdapter(recipes, onlySaves, this));
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
 
+        Log.d("hello" , "kar6");
+
         mSearchView = (SearchView) findViewById(R.id.searchView_dish);
         mSearchView.setIconifiedByDefault(false);
         mSearchView.setOnQueryTextListener(this);
         mSearchView.setSubmitButtonEnabled(true);
         mSearchView.setQueryHint("Search Here");
+
+        Log.d("hello" , "kar7");
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -118,9 +125,13 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        Log.d("hello" , "kar8");
+
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(0).setChecked(true);
+
+        Log.d("hello" , "kar9");
     }
 
     @Override
@@ -463,6 +474,7 @@ public class MainActivity extends AppCompatActivity
         private CountDownLatch latch;
 
         public GetRecipesTask(CountDownLatch latch) {
+            Log.d("hello" , "SUUUUUUUUUUUUUUUUUUUPER KAR");
             this.latch = latch;
         }
 
@@ -470,7 +482,9 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected Collection<Recipe> doInBackground(Void... voids) {
             try {
+                Log.d("hello" , "karkar" + String.valueOf(latch.getCount()));
                 Collection<Recipe> recipes1 = DBHandler.getData().getRecipes();
+                Log.d("hello" , "karkarkar" + String.valueOf(latch.getCount()));
                 recipes = recipes1;
                 latch.countDown();
                 return recipes1;

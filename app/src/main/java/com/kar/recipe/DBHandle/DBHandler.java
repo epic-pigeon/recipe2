@@ -31,6 +31,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
+import android.util.Log;
 
 import com.kar.recipe.DataClasses.Connection;
 import com.kar.recipe.DataClasses.Data;
@@ -121,27 +122,39 @@ public final class DBHandler {
     }
 
     public static Object executePostQuery(String operation, Collection<String> argNames, Collection<String> argValues) throws IOException {
+        Log.d("hello" , "executePostQuery");
         final Object[] result = new Object[] {null};
         final IOException[] e = new IOException[]{null};
+        Log.d("hello" , "executePostQuery2");
         CountDownLatch latch = new CountDownLatch(1);
+        Log.d("hello" , "executePostQuery3");
         executeAsync(() -> {
             try {
+                Log.d("hello" , "executePostQuery4");
                 return executePostQueryMain(operation, argNames, argValues);
             } catch (IOException e1) {
+                Log.d("hello" , "executePostQuery5");
                 e1.printStackTrace();
                 e[0] = e1;
                 return null;
             }
         }, o -> {
+            Log.d("hello" , "executePostQuery6");
             result[0] = o;
             latch.countDown();
         });
         try {
+            Log.d("hello" , "executePostQuery7");
             latch.await();
+            Log.d("hello" , "executePostQuery8");
         } catch (InterruptedException e1) {
             e1.printStackTrace();
         }
-        if (e[0] != null) throw e[0];
+        Log.d("hello" , "executePostQuery9");
+        if (e[0] != null) {
+            Log.d("hello" , "pizdec");
+            throw e[0];}
+        Log.d("hello" , "executePostQuery" + result[0].toString());
         return result[0];
         //return executePostQueryMain(operation, argNames, argValues);
     }
@@ -158,13 +171,16 @@ public final class DBHandler {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public static Data getData() throws IOException {
+        Log.d("hello" , "karkakrakrakrkarkakkakrakrakrkarkakrakrkarkakrakrkakrakrkarkakrkarkar");
         if (data == null) updateData();
         return data;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public static void updateData() throws IOException {
+        Log.d("hello" , "karkakrakrakrkarkakkakrakrakrkar");
         data = fetchData();
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -174,8 +190,11 @@ public final class DBHandler {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private static Data fetchData() throws IOException {
+        Log.d("hello" , "KARKARKAKRKARKAKRAKRKARKAKRAKRKAR");
+
         dump = (JSONObject) executePostQuery("getAll", new Collection<>(), new Collection<>());
 
+        Log.d("hello" , "KAR1");
         Collection<User> users = queueTableFromDump(Constants.USERS.TABLE_NAME, result -> new User(
                 Integer.valueOf((String) result.get(Constants.USERS.ID)),
                 (String) result.get(Constants.USERS.USERNAME),
@@ -183,6 +202,7 @@ public final class DBHandler {
                 (String) result.get(Constants.USERS.AVATAR)
         ));
 
+        Log.d("hello" , "KAR2");
         Collection<Recipe> recipes = queueTableFromDump(Constants.RECIPES.TABLE_NAME, result -> new Recipe(
                 Integer.valueOf((String) result.get(Constants.RECIPES.ID)),
                 (String) result.get(Constants.RECIPES.NAME),
@@ -190,16 +210,19 @@ public final class DBHandler {
                 (String) result.get(Constants.RECIPES.PHOTO)
         ));
 
+        Log.d("hello" , "KAR3");
         Collection<Ingredient> ingredients = queueTableFromDump(Constants.INGREDIENTS.TABLE_NAME, result -> new Ingredient(
                 Integer.valueOf((String) result.get(Constants.INGREDIENTS.ID)),
                 (String) result.get(Constants.INGREDIENTS.NAME)
         ));
 
+        Log.d("hello" , "KAR4");
         Collection<Connection> userSaves = queueTableFromDump(Constants.SAVES.TABLE_NAME, result -> new Connection(
                 Integer.valueOf((String) result.get(Constants.SAVES.USER_ID)),
                 Integer.valueOf((String) result.get(Constants.SAVES.RECIPE_ID))
         ));
 
+        Log.d("hello" , "KAR5");
         Collection<RecipeIngredient> recipeIngredients = queueTableFromDump(Constants.RECIPE_INGREDIENTS.TABLE_NAME, result -> new RecipeIngredient(
                 Integer.valueOf((String) result.get(Constants.RECIPE_INGREDIENTS.ID)),
                 Integer.valueOf((String) result.get(Constants.RECIPE_INGREDIENTS.RECIPE_ID)),
@@ -208,10 +231,19 @@ public final class DBHandler {
                 Double.valueOf((String) result.get(Constants.RECIPE_INGREDIENTS.AMOUNT))
         ));
 
+        Log.d("hello" , "KAR6");
         Collection<Unit> units = queueTableFromDump(Constants.UNITS.TABLE_NAME, result -> new Unit(
                 Integer.valueOf(String.class.cast(result.get(Constants.UNITS.ID))),
                 String.class.cast(result.get(Constants.UNITS.NAME))
         ));
+
+        Log.d("hello" , "kar");
+       Log.d("hello" , new Data(users,
+               recipes,
+               ingredients,
+               userSaves,
+               recipeIngredients,
+               units).toString());
 
         return new Data(
                 users,

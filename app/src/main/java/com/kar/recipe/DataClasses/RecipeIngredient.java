@@ -4,8 +4,8 @@ public class RecipeIngredient extends DataClass {
     private int id;
     private int recipeID;
     private int ingredientID;
-    private int unitID;
     private double amount;
+    private int unitID;
     private transient Recipe recipe;
     private Ingredient ingredient;
     private Unit unit;
