@@ -158,7 +158,7 @@ public class AddRecipeActivity extends AppCompatActivity {
                     ingerdientsUI.add(new IngerdientsUI(String.valueOf(autoCompleteTextView.getText()),
                             0,
                             unit_spinner.getSelectedItemId()));
-                    Log.d("hello" , "KAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR");
+
                 }
             }
         }*/

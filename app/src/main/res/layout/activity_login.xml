@@ -95,7 +95,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_gravity="bottom|center|center_horizontal"
                 ads:adSize="BANNER"
-                ads:adUnitId="@string/banner_ad_unit_id"></com.google.android.gms.ads.AdView>
+                ads:adUnitId="@string/banner_ad_unit_id" />
         </LinearLayout>
     </ScrollView>
 

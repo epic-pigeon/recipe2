@@ -57,8 +57,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     //Для рекламы
     private AdView mAdView;
 
-    private UserLoginTask mAuthTask = null;
-
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
@@ -170,10 +168,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void attemptLogin() throws IOException {
-        if (mAuthTask != null) {
-            return;
-        }
-
         mEmailView.setError(null);
         mPasswordView.setError(null);
 
@@ -200,15 +194,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         if (cancel) {
             focusView.requestFocus();
         } else {
-            if (isLogin(email, password)) {
-                showProgress(true);
-                mAuthTask = new UserLoginTask(email, password);
-                mAuthTask.execute((Void) null);
-            } else {
-                mPasswordView.setError("Такого пользователя не существует");
-                mEmailView.setError("Такого пользователя не существует");
-                cancel = true;
-            }
+            // TODO on login!!!!!!!!!!!!!!!!!
         }
     }
 
@@ -228,46 +214,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     protected void onPause() {
         mAdView.pause();
         super.onPause();
-    }
-
-    private static class DataTask extends AsyncTask<Void, Void, Data> {
-        private CountDownLatch latch;
-
-        public DataTask(CountDownLatch latch) {
-            this.latch = latch;
-        }
-
-        @RequiresApi(api = Build.VERSION_CODES.N)
-        @Override
-        protected Data doInBackground(Void... voids) {
-            try {
-                data = DBHandler.getData();
-                latch.countDown();
-                return data;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-    }
-
-    private static Data data;
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    private boolean isLogin(String email, String password) {
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        new DataTask(countDownLatch).execute();
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if (data.getUsers().findFirst(user -> user.getName().equals(email) && user.getPassword().equals(password)) != null) {
-            GeneralData.user = data.getUsers().findFirst(user -> user.getName().equals(email) && user.getPassword().equals(password));
-            return true;
-        } else {
-            return false;
-        }
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
@@ -346,49 +292,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         int ADDRESS = 0;
         int IS_PRIMARY = 1;
-    }
-
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
     }
 }
 

@@ -15,7 +15,7 @@ public class Constants {
 
     public static final class UNITS {
         public static final String TABLE_NAME = "units";
-        public static final String ID = "unit_id";
+        public static final String ID = "id";
         public static final String NAME = "unit";
     }
 
