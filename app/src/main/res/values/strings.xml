@@ -99,6 +99,7 @@
     <string name="title_activity_profile">Sign in</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- <string name="hello_blank_fragment">Hello blank fragment</string> -->
     <string name="banner_ad_unit_id">ca-app-pub-9264354173198636/9490302123</string>
+    <string name="banner_sign_up_ad_unit_id">ca-app-pub-9264354173198636/8902967007</string>
 </resources>

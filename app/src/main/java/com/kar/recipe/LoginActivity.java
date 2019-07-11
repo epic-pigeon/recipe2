@@ -194,7 +194,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         if (cancel) {
             focusView.requestFocus();
         } else {
-            // TODO on login!!!!!!!!!!!!!!!!!
+            GeneralData.user = DBHandler.getData().getUsers().findFirst(user -> user.getName().equals(email) && user.getPassword().equals(password));
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
         }
     }
 
