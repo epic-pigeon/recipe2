@@ -115,6 +115,7 @@ public class MainActivity extends AppCompatActivity
         mSearchView.setIconifiedByDefault(false);
         mSearchView.setOnQueryTextListener(this);
         mSearchView.setSubmitButtonEnabled(true);
+        mSearchView.setFocusable(false);
         mSearchView.setQueryHint("Search Here");
 
 

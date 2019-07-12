@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 public class AddRecipeActivity extends AppCompatActivity {
 
@@ -183,12 +185,34 @@ public class AddRecipeActivity extends AppCompatActivity {
 
     private void attemptAddRecipe(){
         if (recipe_name.getText().length() < 3){
-
+            Snackbar.make(getWindow().getDecorView().getRootView(), R.string.error_invalid_name_of_recipe, Snackbar.LENGTH_LONG).show();
         }else if (recipe_description.getText().length() < 15){
-
+            Snackbar.make(getWindow().getDecorView().getRootView(), R.string.error_invalid_des_of_recipe, Snackbar.LENGTH_LONG).show();
         }else{
             //TODO Dish Register
+            CountDownLatch latch = new CountDownLatch(1);
 
+            new AsyncTask<Void, Void, Void>() {
+                @RequiresApi(api = Build.VERSION_CODES.N)
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    try {
+                        DBHandler.getData();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    latch.countDown();
+                    return null;
+                }
+            }.execute();
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
         }
     }
 
